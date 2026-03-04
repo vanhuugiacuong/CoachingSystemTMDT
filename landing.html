@@ -1,224 +1,498 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeMentor Pro – 1-on-1 Coding Coaching</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mikademy Coach – Học lập trình 1-1</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
 </head>
-<body>
-  <header class="site-header">
-    <nav class="navbar">
-      <div class="nav-brand">
-        <span class="brand-logo">CP</span>
-        <span class="brand-name">CodeMentor Pro</span>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <!-- Top navbar (marketing) -->
+  <header class="w-full border-b border-slate-200 bg-white/90 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex h-16 items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div
+            class="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-semibold text-lg shadow-md"
+          >
+            M
+          </div>
+          <span class="font-semibold text-slate-900">Mikademy Coach</span>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-1 rounded-full bg-slate-100 p-1 text-sm">
+          <a href="#hero" class="px-4 py-1.5 rounded-full text-slate-900 font-medium bg-white shadow-sm">
+            Trang chủ
+          </a>
+          <a href="#why" class="px-4 py-1.5 rounded-full text-slate-600 hover:bg-white hover:text-slate-900">
+            Lý do chọn
+          </a>
+          <a href="#partners" class="px-4 py-1.5 rounded-full text-slate-600 hover:bg-white hover:text-slate-900">
+            Đối tác
+          </a>
+          <a href="#stories" class="px-4 py-1.5 rounded-full text-slate-600 hover:bg-white hover:text-slate-900">
+            Câu chuyện
+          </a>
+        </nav>
+
+        <div class="flex items-center gap-2" id="mkd-landing-auth-actions">
+          <button
+            type="button"
+            data-mkd-nav-dashboard
+            class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Dashboard học viên
+          </button>
+          <button
+            type="button"
+            data-mkd-cta="navbar"
+            class="inline-flex items-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft"
+          >
+            Đăng nhập
+          </button>
+        </div>
       </div>
-      <button class="nav-toggle" aria-label="Toggle navigation">
-        <span class="nav-toggle-line"></span>
-        <span class="nav-toggle-line"></span>
-        <span class="nav-toggle-line"></span>
-      </button>
-      <ul class="nav-links">
-        <li><a href="#hero" class="nav-link">Home</a></li>
-        <li><a href="#programs" class="nav-link">Programs</a></li>
-        <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
-        <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
-        <li><a href="dashboard.html" class="nav-link nav-link-dashboard">Student Dashboard</a></li>
-      </ul>
-    </nav>
+    </div>
   </header>
 
   <main>
-    <!-- Hero Section -->
-    <section id="hero" class="hero section-padding">
-      <div class="hero-content">
-        <div class="hero-text reveal-on-scroll">
-          <h1>Master Programming with 1-on-1 Coaching</h1>
-          <p>Personalized roadmap. Real mentors. Real results.</p>
-          <div class="hero-actions">
-            <a href="#cta" class="btn btn-primary">Book Free Trial</a>
-            <a href="#programs" class="btn btn-outline">View Programs</a>
+    <!-- Hero -->
+    <section id="hero" class="relative overflow-hidden">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-12 pb-16 lg:pt-16 lg:pb-24">
+        <div class="grid lg:grid-cols-[minmax(0,1.15fr),minmax(0,1fr)] gap-10 items-center">
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-medium text-blue-800">
+              <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+              Học hiệu quả hơn 3x với coaching 1-1
+            </div>
+            <div>
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-slate-900">
+                Học lập trình 1-1 cùng
+                <span class="text-primary">Mikademy Coach</span>
+              </h1>
+              <p class="mt-3 text-sm sm:text-base text-slate-600 max-w-xl">
+                Tăng tốc độ học lập trình với phương pháp coaching cá nhân hoá, tiết kiệm thời gian và đạt kết quả nhanh chóng hơn.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                data-mkd-cta="primary"
+                class="inline-flex items-center justify-center h-11 px-6 rounded-full bg-primary text-white text-sm font-medium shadow-sm hover:bg-primary-soft"
+              >
+                Bắt đầu ngay
+              </button>
+              <a
+                href="courses.html"
+                class="inline-flex items-center justify-center h-11 px-5 rounded-full border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Xem các khóa học
+              </a>
+            </div>
+            <ul class="mt-2 space-y-1.5 text-xs text-slate-500">
+              <li>• Lộ trình học rõ ràng, bám sát mục tiêu cá nhân.</li>
+              <li>• Mentor là lập trình viên đang làm việc thực tế.</li>
+              <li>• Học qua dự án thực, code được review chi tiết.</li>
+            </ul>
           </div>
-          <ul class="hero-highlights">
-            <li>Tailored weekly sessions for your goals</li>
-            <li>Senior engineers from top tech companies</li>
-            <li>Project-based learning with real feedback</li>
-          </ul>
-        </div>
-        <div class="hero-illustration reveal-on-scroll" aria-hidden="true">
-          <div class="hero-illustration-inner">
-            <div class="hero-figure hero-figure-main"></div>
-            <div class="hero-figure hero-figure-secondary"></div>
-            <div class="hero-figure hero-figure-tertiary"></div>
-            <p class="hero-illustration-caption">Live 1-on-1 coding sessions</p>
+
+          <div class="relative">
+            <div class="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-blue-100 blur-3xl opacity-70"></div>
+            <div class="relative rounded-3xl bg-slate-900 text-slate-50 shadow-2xl border border-slate-800 overflow-hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 text-xs">
+                <span class="font-medium">coach.mikademy.vn</span>
+                <span class="inline-flex items-center gap-1 text-[11px] text-slate-400">
+                  Tuần này
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-3 px-4 py-4 text-xs">
+                <div class="rounded-2xl bg-slate-800/60 px-3 py-3">
+                  <p class="text-slate-400 mb-1">Tổng khóa học</p>
+                  <p class="text-xl font-semibold">24</p>
+                  <p class="text-[11px] text-emerald-400 mt-1">+12% so với tháng trước</p>
+                </div>
+                <div class="rounded-2xl bg-slate-800/60 px-3 py-3">
+                  <p class="text-slate-400 mb-1">Học viên hoạt động</p>
+                  <p class="text-xl font-semibold">156</p>
+                  <p class="text-[11px] text-emerald-400 mt-1">+8% tuần này</p>
+                </div>
+                <div class="rounded-2xl bg-slate-800/60 px-3 py-3">
+                  <p class="text-slate-400 mb-1">Giảng viên</p>
+                  <p class="text-xl font-semibold">12</p>
+                  <p class="text-[11px] text-slate-400 mt-1">Full-stack, backend, AI...</p>
+                </div>
+                <div class="rounded-2xl bg-slate-800/60 px-3 py-3">
+                  <p class="text-slate-400 mb-1">Buổi học tuần này</p>
+                  <p class="text-xl font-semibold">48</p>
+                  <p class="text-[11px] text-emerald-400 mt-1">Lịch học linh hoạt</p>
+                </div>
+              </div>
+              <div class="px-4 pb-4">
+                <div class="rounded-2xl bg-slate-800/70 px-3 py-3 text-[11px] space-y-1.5">
+                  <div class="flex items-center justify-between text-slate-300">
+                    <span>Lịch học tuần này</span>
+                    <span class="text-slate-400">Frontend · Backend · AI</span>
+                  </div>
+                  <div class="flex gap-1.5">
+                    <span class="flex-1 h-1.5 rounded-full bg-blue-500/80"></span>
+                    <span class="flex-1 h-1.5 rounded-full bg-emerald-500/80"></span>
+                    <span class="flex-1 h-1.5 rounded-full bg-violet-500/80"></span>
+                    <span class="flex-1 h-1.5 rounded-full bg-amber-500/80"></span>
+                  </div>
+                  <p class="text-slate-400">
+                    Học viên chủ động đặt lịch, hệ thống tự đồng bộ thời khóa biểu.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Stats Section -->
-    <section id="stats" class="stats section-padding">
-      <div class="section-header reveal-on-scroll">
-        <h2>Results that speak for themselves</h2>
-        <p>CodeMentor Pro helps learners grow faster with focused, hands-on guidance.</p>
-      </div>
-      <div class="stats-grid">
-        <div class="stat-card reveal-on-scroll">
-          <span class="stat-value">1200+</span>
-          <span class="stat-label">Students coached</span>
+    <!-- Why choose -->
+    <section id="why" class="py-12 sm:py-16">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-8 sm:mb-10">
+          <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+            Tại sao chọn Mikademy Coach?
+          </h2>
+          <p class="text-sm text-slate-500 max-w-2xl mx-auto">
+            Khám phá những lợi ích vượt trội mà phương pháp coaching 1-1 mang lại cho hành trình học lập trình của bạn.
+          </p>
         </div>
-        <div class="stat-card reveal-on-scroll">
-          <span class="stat-value">85</span>
-          <span class="stat-label">Expert mentors</span>
-        </div>
-        <div class="stat-card reveal-on-scroll">
-          <span class="stat-value">3000+</span>
-          <span class="stat-label">1-on-1 sessions</span>
-        </div>
-        <div class="stat-card reveal-on-scroll">
-          <span class="stat-value">95%</span>
-          <span class="stat-label">Goal completion rate</span>
+
+        <div class="grid gap-4 sm:gap-5 md:grid-cols-3">
+          <article class="rounded-2xl bg-blue-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-3">
+              ⚡
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Học tập linh hoạt</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Tuỳ chỉnh lịch học, hình thức online/offline phù hợp với quỹ thời gian của bạn.
+            </p>
+          </article>
+
+          <article class="rounded-2xl bg-emerald-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center mb-3">
+              🎯
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Lộ trình cá nhân hoá</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Mỗi học viên có roadmap riêng theo mục tiêu: xin việc, chuyển ngành, nâng cấp kỹ năng.
+            </p>
+          </article>
+
+          <article class="rounded-2xl bg-violet-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-violet-500 text-white flex items-center justify-center mb-3">
+              💡
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Giải đáp tức thì</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Không còn “kẹt” vì bug hay concept khó – mentor luôn đồng hành giải đáp chi tiết.
+            </p>
+          </article>
+
+          <article class="rounded-2xl bg-amber-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-amber-500 text-white flex items-center justify-center mb-3">
+              🧪
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Thực hành ngay lập tức</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Học qua dự án thực tế, code được review, biết ngay mình làm đúng hay sai.
+            </p>
+          </article>
+
+          <article class="rounded-2xl bg-cyan-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-cyan-500 text-white flex items-center justify-center mb-3">
+              👥
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Học nhóm cùng bạn bè</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Tuỳ chọn học 1-1 hoặc nhóm nhỏ 2–3 người để tiết kiệm chi phí.
+            </p>
+          </article>
+
+          <article class="rounded-2xl bg-rose-50 px-4 py-4 sm:px-5 sm:py-5">
+            <div class="h-10 w-10 rounded-xl bg-rose-500 text-white flex items-center justify-center mb-3">
+              ⏰
+            </div>
+            <h3 class="text-sm font-semibold text-slate-900 mb-1.5">Đồng hành lâu dài</h3>
+            <p class="text-xs sm:text-sm text-slate-600">
+              Mentor theo sát tiến độ, góp ý định hướng nghề nghiệp trong suốt hành trình học.
+            </p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="how-it-works section-padding">
-      <div class="section-header reveal-on-scroll">
-        <h2>How CodeMentor Pro works</h2>
-        <p>Structured coaching designed around your schedule and learning style.</p>
-      </div>
-      <div class="steps-grid">
-        <div class="step-card reveal-on-scroll">
-          <span class="step-number">01</span>
-          <h3>Book Free Consultation</h3>
-          <p>Share your background, goals, and availability so we can match you with the ideal mentor.</p>
+    <!-- Partners -->
+    <section id="partners" class="py-10 sm:py-12 border-t border-slate-200 bg-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-6 sm:mb-8">
+          <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-1">
+            Các đối tác đồng hành
+          </h2>
+          <p class="text-sm text-slate-500">
+            Những nền tảng chúng tôi tin dùng, hỗ trợ và tích hợp để tạo nên trải nghiệm học tốt hơn.
+          </p>
         </div>
-        <div class="step-card reveal-on-scroll">
-          <span class="step-number">02</span>
-          <h3>Get Personalized Roadmap</h3>
-          <p>Receive a clear, milestone-based learning path tailored to your target role and timeline.</p>
-        </div>
-        <div class="step-card reveal-on-scroll">
-          <span class="step-number">03</span>
-          <h3>Weekly 1-on-1 Sessions</h3>
-          <p>Meet your mentor weekly, review progress, ship projects, and adjust your plan as you grow.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 items-center justify-items-center text-sm font-medium text-slate-600">
+          <div class="h-10 w-28 rounded-xl border border-slate-200 flex items-center justify-center bg-slate-50">
+            OpenAI
+          </div>
+          <div class="h-10 w-28 rounded-xl border border-slate-200 flex items-center justify-center bg-slate-50">
+            Claude
+          </div>
+          <div class="h-10 w-28 rounded-xl border border-slate-200 flex items-center justify-center bg-slate-50">
+            Redis
+          </div>
+          <div class="h-10 w-28 rounded-xl border border-slate-200 flex items-center justify-center bg-slate-50">
+            RabbitMQ
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Featured Programs Section -->
-    <section id="programs" class="programs section-padding">
-      <div class="section-header reveal-on-scroll">
-        <h2>Featured 1-on-1 programs</h2>
-        <p>Choose a track that matches your current level and career goals.</p>
-      </div>
-      <div class="programs-grid">
-        <article class="program-card reveal-on-scroll">
-          <h3>Frontend Advanced</h3>
-          <p>Upgrade your frontend skills with modern JavaScript, architecture patterns, and performance optimization.</p>
-          <ul class="program-features">
-            <li>UI architecture and component design</li>
-            <li>Async flows and state patterns</li>
-            <li>Accessibility and performance reviews</li>
-          </ul>
-          <button class="btn btn-secondary">Learn More</button>
-        </article>
+    <!-- Success stories -->
+    <section id="stories" class="py-12 sm:py-16">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-semibold text-slate-900 mb-2">
+            Câu chuyện thành công
+          </h2>
+          <p class="text-sm text-slate-500 max-w-2xl mx-auto">
+            Rất nhiều học viên đã thay đổi sự nghiệp lập trình của mình nhờ Mikademy Coach.
+          </p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+          <article class="rounded-2xl bg-white border border-slate-200 px-4 py-4 sm:px-5 sm:py-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="h-9 w-9 rounded-full bg-sky-500 text-white flex items-center justify-center text-sm font-semibold">
+                D
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-900">Anh Lữ Hoàng Duy</p>
+                <p class="text-[11px] text-slate-500">Full-stack Developer</p>
+              </div>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600">
+              "Từ con số 0 về lập trình, sau 6 tháng với Mikademy Coach, tôi đã có việc làm với mức lương 50 triệu/tháng.
+              Phương pháp 1-1 thực sự hiệu quả."
+            </p>
+          </article>
 
-        <article class="program-card reveal-on-scroll">
-          <h3>Backend Mastery</h3>
-          <p>Build reliable APIs, master databases, and learn how to design scalable backend systems.</p>
-          <ul class="program-features">
-            <li>API design and best practices</li>
-            <li>Data modeling and persistence</li>
-            <li>Testing, logging, and monitoring</li>
-          </ul>
-          <button class="btn btn-secondary">Learn More</button>
-        </article>
+          <article class="rounded-2xl bg-white border border-slate-200 px-4 py-4 sm:px-5 sm:py-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="h-9 w-9 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-semibold">
+                N
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-900">Chị Nguyễn Thanh Nhã Yến</p>
+                <p class="text-[11px] text-slate-500">Marketing</p>
+              </div>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600">
+              "Coach đã giúp tôi chuyển từ marketing sang tech chỉ trong 7 tháng. Tất cả buổi học đều xoay quanh dự án thực tế của riêng tôi."
+            </p>
+          </article>
 
-        <article class="program-card reveal-on-scroll">
-          <h3>UI/UX Design</h3>
-          <p>Learn to design intuitive interfaces and collaborative workflows with engineering teams.</p>
-          <ul class="program-features">
-            <li>User research and wireframing</li>
-            <li>Design systems and components</li>
-            <li>Developer-ready handoff practices</li>
-          </ul>
-          <button class="btn btn-secondary">Learn More</button>
-        </article>
-      </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials section-padding">
-      <div class="section-header reveal-on-scroll">
-        <h2>What students are saying</h2>
-        <p>Real stories from learners who used CodeMentor Pro to level up.</p>
-      </div>
-      <div class="testimonials-grid">
-        <article class="testimonial-card reveal-on-scroll">
-          <div class="avatar-placeholder" aria-hidden="true"></div>
-          <h3>Emily, Frontend Developer</h3>
-          <p>“My mentor helped me break into my first frontend role. We turned my practice projects into a polished portfolio and rehearsed interviews weekly.”</p>
-        </article>
-        <article class="testimonial-card reveal-on-scroll">
-          <div class="avatar-placeholder" aria-hidden="true"></div>
-          <h3>James, Backend Engineer</h3>
-          <p>“I went from tutorials to designing services at work. The one-on-one code reviews pushed me to think like a senior engineer.”</p>
-        </article>
-        <article class="testimonial-card reveal-on-scroll">
-          <div class="avatar-placeholder" aria-hidden="true"></div>
-          <h3>Sofia, Product Designer</h3>
-          <p>“The UI/UX track gave me a solid framework. I landed a hybrid role where I collaborate confidently with developers.”</p>
-        </article>
+          <article class="rounded-2xl bg-white border border-slate-200 px-4 py-4 sm:px-5 sm:py-5 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="h-9 w-9 rounded-full bg-violet-500 text-white flex items-center justify-center text-sm font-semibold">
+                T
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-slate-900">Anh Võ Minh Trí</p>
+                <p class="text-[11px] text-slate-500">AI Engineer</p>
+              </div>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600">
+              "Tôi đã được hướng dẫn về AI/ML từ cơ bản đến nâng cao và ứng dụng vào công việc hiện tại. Mentor rất sát sao và thực tế."
+            </p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section id="cta" class="cta section-padding">
-      <div class="cta-inner reveal-on-scroll">
-        <h2>Start Your Coding Journey Today</h2>
-        <p>Book a free 30-minute consultation to map out your next steps with a mentor.</p>
-        <a href="#hero" class="btn btn-light">Get Started</a>
+    <!-- Final CTA -->
+    <section class="py-10 sm:py-12 bg-primary text-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center space-y-4">
+        <h2 class="text-2xl sm:text-3xl font-semibold">
+          Bắt đầu hành trình học lập trình hiệu quả ngay hôm nay!
+        </h2>
+        <p class="text-sm sm:text-base text-blue-100 max-w-2xl mx-auto">
+          Đăng nhập để truy cập Dashboard, đăng ký khóa học và sắp xếp lịch học linh hoạt theo thời gian của bạn.
+        </p>
+        <div class="flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            data-mkd-cta="secondary"
+            class="inline-flex items-center justify-center h-11 px-6 rounded-full bg-white text-primary text-sm font-medium hover:bg-blue-50"
+          >
+            Đăng nhập / Đăng ký
+          </button>
+          <a
+            href="courses.html"
+            class="inline-flex items-center justify-center h-11 px-6 rounded-full border border-blue-100 text-sm font-medium text-white hover:bg-primary-soft/20"
+          >
+            Xem danh sách khóa học
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3>CodeMentor Pro</h3>
-        <p>1-on-1 coding mentorship for learners ready to move beyond tutorials.</p>
-      </div>
-      <div class="footer-column">
-        <h4>About</h4>
-        <ul>
-          <li><a href="#how-it-works">How it works</a></li>
-          <li><a href="#testimonials">Success stories</a></li>
-          <li><a href="#programs">Programs</a></li>
-        </ul>
-      </div>
-      <div class="footer-column">
-        <h4>Contact</h4>
-        <ul>
-          <li><span>Email: hello@codementorpro.fake</span></li>
-          <li><span>Mon–Fri: 9:00–18:00</span></li>
-        </ul>
-      </div>
-      <div class="footer-column">
-        <h4>Social</h4>
-        <div class="social-placeholder">
-          <span class="social-icon-circle"></span>
-          <span class="social-icon-circle"></span>
-          <span class="social-icon-circle"></span>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© <span id="year"></span> CodeMentor Pro. All rights reserved.</span>
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500">
+      <p>© <span id="mkd-landing-year"></span> Mikademy Coach. Tất cả quyền được bảo lưu.</p>
+      <p>Hotline: <span class="font-medium text-slate-800">0865 000 806</span></p>
     </div>
   </footer>
 
-  <script src="js/main.js" defer></script>
+  <script type="module">
+    // Hiển thị năm hiện tại
+    const yearEl = document.getElementById("mkd-landing-year");
+    if (yearEl) {
+      yearEl.textContent = new Date().getFullYear();
+    }
+
+    // Điều hướng từ landing sang Dashboard hoặc Auth dựa trên trạng thái đăng nhập Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let isLoggedIn = false;
+
+    function gotoApp() {
+      window.location.href = isLoggedIn ? "dashboard.html" : "auth.html";
+    }
+
+    function attachHandlers() {
+      const dashboardLinks = document.querySelectorAll("[data-mkd-nav-dashboard]");
+      const ctaLinks = document.querySelectorAll("[data-mkd-cta]");
+
+      dashboardLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          gotoApp();
+        });
+      });
+
+      ctaLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          gotoApp();
+        });
+      });
+    }
+
+    function renderAuthNavbar(user) {
+      const container = document.getElementById("mkd-landing-auth-actions");
+      if (!container) return;
+
+      if (!user) {
+        container.innerHTML = `
+          <button
+            type="button"
+            data-mkd-nav-dashboard
+            class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Dashboard học viên
+          </button>
+          <button
+            type="button"
+            data-mkd-cta="navbar"
+            class="inline-flex items-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft"
+          >
+            Đăng nhập
+          </button>
+        `;
+        attachHandlers();
+        return;
+      }
+
+      const displayName = user.displayName || "Học viên";
+      const email = user.email || "";
+      const initial = (displayName || email || "?").trim()[0]?.toUpperCase() || "S";
+
+      container.innerHTML = `
+        <div class="hidden sm:flex flex-col items-end mr-1">
+          <span class="text-xs font-medium text-slate-900">${displayName}</span>
+          <span class="text-[11px] text-slate-500">${email}</span>
+        </div>
+        <div class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
+          ${initial}
+        </div>
+        <button
+          type="button"
+          data-mkd-nav-dashboard
+          class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Dashboard
+        </button>
+        <button
+          type="button"
+          id="mkd-landing-logout"
+          class="inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Đăng xuất
+        </button>
+      `;
+
+      attachHandlers();
+
+      const logoutBtn = document.getElementById("mkd-landing-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+          try {
+            await signOut(auth);
+            window.location.href = "auth.html";
+          } catch (err) {
+            console.error("Logout error:", err);
+          }
+        });
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      isLoggedIn = !!user;
+      renderAuthNavbar(user || null);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      attachHandlers();
+    });
+  </script>
 </body>
 </html>
