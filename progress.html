@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiến độ học tập - Mikademy Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex items-center justify-between gap-4 mb-2">
+        <div>
+          <p class="text-xs text-slate-400 mb-1">
+            <a href="dashboard.html" class="hover:text-slate-700">Dashboard</a>
+            <span class="mx-1">/</span>
+            <span class="text-slate-600">Tiến độ học tập</span>
+          </p>
+          <h1 class="text-2xl font-semibold text-slate-900">
+            Tiến độ học tập
+          </h1>
+          <p id="mkd-progress-course-title" class="text-sm text-slate-500 mt-1">
+            Đang tải thông tin khóa học...
+          </p>
+        </div>
+        <span id="mkd-progress-status-badge" class="inline-flex items-center h-7 px-3 rounded-full bg-blue-50 text-[11px] font-medium text-blue-700">
+          Đang học
+        </span>
+      </div>
+    </header>
+
+    <section class="grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(0,1.2fr)]">
+      <!-- Left: summary + syllabus as checklist -->
+      <div class="space-y-6">
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <div class="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Tổng quan tiến độ</h2>
+              <p id="mkd-progress-meta" class="text-xs text-slate-500 mt-1">
+                0 / 0 buổi · 0% hoàn thành
+              </p>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span class="inline-flex h-7 items-center rounded-full bg-slate-100 px-3 font-medium">
+                Trạng thái: <span id="mkd-progress-status-text" class="ml-1 text-blue-700">Đang học</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div id="mkd-progress-bar" class="h-full rounded-full bg-primary" style="width: 0%;"></div>
+            </div>
+            <p id="mkd-progress-note" class="text-xs text-slate-500">
+              Hãy đánh dấu hoàn thành từng buổi học bên dưới để theo dõi tiến độ của bạn.
+            </p>
+          </div>
+        </article>
+
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">
+            Các buổi học trong khóa
+          </h2>
+          <ul id="mkd-progress-sessions" class="space-y-2 text-sm text-slate-700">
+          </ul>
+        </article>
+
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-4">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">
+                Sắp xếp lịch học
+              </h2>
+              <p class="text-xs text-slate-500 mt-1">
+                Tạo thời khóa biểu cá nhân cho khóa học này.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-[minmax(0,1.1fr),minmax(0,0.9fr)]">
+            <div class="space-y-2">
+              <label class="block">
+                <span class="text-xs font-medium text-slate-600">Ngày học</span>
+                <input
+                  id="mkd-schedule-date"
+                  type="date"
+                  class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                />
+              </label>
+            </div>
+            <div class="space-y-2">
+              <label class="block">
+                <span class="text-xs font-medium text-slate-600">Khung giờ</span>
+                <select
+                  id="mkd-schedule-slot"
+                  class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                >
+                  <option value="">Chọn khung giờ...</option>
+                  <option value="08-10">08:00 - 10:00</option>
+                  <option value="10-12">10:15 - 12:15</option>
+                  <option value="13-15">13:15 - 15:15</option>
+                  <option value="15-17">15:30 - 17:30</option>
+                  <option value="17-19">17:45 - 19:45</option>
+                  <option value="20-22">20:00 - 22:00</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block">
+              <span class="text-xs font-medium text-slate-600">Ghi chú (tuỳ chọn)</span>
+              <input
+                id="mkd-schedule-note"
+                type="text"
+                placeholder="Ví dụ: Buổi 1 - Làm quen nội dung, hoặc Online qua Zoom..."
+                class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+              />
+            </label>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="button"
+              id="mkd-schedule-add"
+              class="inline-flex items-center justify-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft"
+            >
+              Thêm vào lịch
+            </button>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              Thời khóa biểu của bạn
+            </h3>
+            <div
+              id="mkd-schedule-empty"
+              class="rounded-xl border border-dashed border-slate-200 px-3 py-3 text-xs text-slate-500"
+            >
+              Chưa có buổi học nào trong lịch. Hãy chọn ngày giờ và bấm <span class="font-medium">Thêm vào lịch</span>.
+            </div>
+            <ul id="mkd-schedule-list" class="mt-2 space-y-2 text-xs text-slate-700 hidden"></ul>
+          </div>
+        </article>
+      </div>
+
+      <!-- Right: info + actions -->
+      <div class="space-y-6">
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">
+            Thông tin khóa học
+          </h2>
+          <dl class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-slate-500">Số buổi:</dt>
+              <dd id="mkd-progress-total-sessions" class="font-medium text-slate-900">0 buổi</dd>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-slate-500">Hình thức đăng ký:</dt>
+              <dd id="mkd-progress-registration-type" class="font-medium text-slate-900">-</dd>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-slate-500">Hình thức thanh toán:</dt>
+              <dd id="mkd-progress-payment-method" class="font-medium text-slate-900">-</dd>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <dt class="text-slate-500">Học phí:</dt>
+              <dd id="mkd-progress-price" class="font-semibold text-slate-900">0 ₫</dd>
+            </div>
+          </dl>
+        </aside>
+
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">
+            Tài liệu khóa học
+          </h2>
+          <p id="mkd-progress-materials-title" class="text-xs text-slate-500 mb-3">
+            Tài liệu tham khảo dành cho khóa học này.
+          </p>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+              <div>
+                <p class="font-medium text-slate-900">Slide tổng quan khóa học</p>
+                <p class="text-xs text-slate-500">PDF giới thiệu nội dung và mục tiêu từng buổi.</p>
+              </div>
+              <button class="inline-flex items-center h-8 px-3 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50">
+                Tải xuống
+              </button>
+            </li>
+            <li class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+              <div>
+                <p class="font-medium text-slate-900">Bộ bài tập thực hành</p>
+                <p class="text-xs text-slate-500">Danh sách bài tập theo từng tuần học.</p>
+              </div>
+              <button class="inline-flex items-center h-8 px-3 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50">
+                Xem
+              </button>
+            </li>
+            <li class="flex items-center justify-between gap-3 rounded-xl border border-slate-100 px-3 py-2">
+              <div>
+                <p class="font-medium text-slate-900">Source code mẫu</p>
+                <p class="text-xs text-slate-500">Link repository chứa ví dụ minh họa.</p>
+              </div>
+              <button class="inline-flex items-center h-8 px-3 rounded-full border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50">
+                Mở repo
+              </button>
+            </li>
+          </ul>
+        </aside>
+
+        <aside class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-4">
+          <h2 class="text-sm font-semibold text-slate-900">
+            Liên hệ Mentor
+          </h2>
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
+              <span id="mkd-progress-mentor-initial">M</span>
+            </div>
+            <div>
+              <p id="mkd-progress-mentor-name" class="text-sm font-medium text-slate-900">
+                Mentor của bạn
+              </p>
+              <p id="mkd-progress-mentor-role" class="text-xs text-slate-500">
+                Coach 1-1 cho khóa học này
+              </p>
+            </div>
+          </div>
+          <div class="space-y-2 text-xs text-slate-500">
+            <p>
+              Nếu bạn cần hỗ trợ về bài tập, lịch học hoặc định hướng lộ trình, hãy liên hệ trực tiếp với mentor.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a
+              id="mkd-progress-mentor-email"
+              href="mailto:mentor@example.com"
+              class="inline-flex items-center justify-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft"
+            >
+              Gửi email cho mentor
+            </a>
+            <button
+              type="button"
+              class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Chat nhanh (mô phỏng)
+            </button>
+          </div>
+        </aside>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7 space-y-3">
+          <p class="text-xs text-slate-500">
+            Tính năng cập nhật tiến độ chi tiết (điểm danh, bài tập, đánh giá) sẽ được bổ sung sau.
+          </p>
+          <a
+            href="dashboard.html"
+            class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"
+          >
+            Quay lại Dashboard
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div id="mkd-progress-not-found" class="hidden mt-10 rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+      Không tìm thấy dữ liệu khóa học. Vui lòng quay lại Dashboard.
+    </div>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById, formatPriceVND } from "./js/courses-data.js";
+
+    renderStudentNavbar("dashboard");
+    renderSiteFooter();
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Cannot read registered courses", e);
+        return [];
+      }
+    }
+
+    function getRegistrationForCourse(courseId) {
+      const list = loadRegisteredCourses();
+      return list.find((item) => item.courseId === courseId);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("id");
+    const course = courseId ? getCourseById(courseId) : undefined;
+    const registration = courseId ? getRegistrationForCourse(courseId) : undefined;
+
+    const notFoundEl = document.getElementById("mkd-progress-not-found");
+    if (!course || !registration) {
+      if (notFoundEl) notFoundEl.classList.remove("hidden");
+    } else {
+      document.title = `Tiến độ - ${course.title} - Mikademy Coach`;
+
+      const titleEl = document.getElementById("mkd-progress-course-title");
+      const statusBadge = document.getElementById("mkd-progress-status-badge");
+      const statusText = document.getElementById("mkd-progress-status-text");
+      const metaEl = document.getElementById("mkd-progress-meta");
+      const barEl = document.getElementById("mkd-progress-bar");
+      const noteEl = document.getElementById("mkd-progress-note");
+      const sessionsList = document.getElementById("mkd-progress-sessions");
+      const totalSessionsEl = document.getElementById("mkd-progress-total-sessions");
+      const regTypeEl = document.getElementById("mkd-progress-registration-type");
+      const paymentMethodEl = document.getElementById("mkd-progress-payment-method");
+      const priceEl = document.getElementById("mkd-progress-price");
+      const materialsTitleEl = document.getElementById("mkd-progress-materials-title");
+      const mentorInitialEl = document.getElementById("mkd-progress-mentor-initial");
+      const mentorNameEl = document.getElementById("mkd-progress-mentor-name");
+      const mentorRoleEl = document.getElementById("mkd-progress-mentor-role");
+      const mentorEmailEl = document.getElementById("mkd-progress-mentor-email");
+      const scheduleDateEl = document.getElementById("mkd-schedule-date");
+      const scheduleSlotEl = document.getElementById("mkd-schedule-slot");
+      const scheduleNoteEl = document.getElementById("mkd-schedule-note");
+      const scheduleAddBtn = document.getElementById("mkd-schedule-add");
+      const scheduleEmptyEl = document.getElementById("mkd-schedule-empty");
+      const scheduleListEl = document.getElementById("mkd-schedule-list");
+
+      const totalSessions = course.sessions || 0;
+      const completedSessions = registration.completedSessions || 0;
+      const progressPercent =
+        totalSessions > 0 ? Math.min(100, Math.round((completedSessions / totalSessions) * 100)) : 0;
+
+      if (titleEl) titleEl.textContent = course.title;
+      if (statusBadge && statusText) {
+        const status = registration.status === "learning" ? "learning" : "registered";
+        if (status === "learning") {
+          statusBadge.textContent = "Đang học";
+          statusBadge.className =
+            "inline-flex items-center h-7 px-3 rounded-full bg-blue-50 text-[11px] font-medium text-blue-700";
+          statusText.textContent = "Đang học";
+        } else {
+          statusBadge.textContent = "Đã đăng ký";
+          statusBadge.className =
+            "inline-flex items-center h-7 px-3 rounded-full bg-emerald-50 text-[11px] font-medium text-emerald-700";
+          statusText.textContent = "Đã đăng ký";
+        }
+      }
+
+      if (metaEl) {
+        metaEl.textContent = `${completedSessions} / ${totalSessions} buổi · ${progressPercent}% hoàn thành`;
+      }
+      if (barEl) {
+        barEl.style.width = `${progressPercent}%`;
+      }
+      if (noteEl && progressPercent === 0) {
+        noteEl.textContent =
+          "Bạn vừa bắt đầu khóa học này. Khi hoàn thành từng buổi học, tiến độ sẽ được cập nhật tại đây.";
+      }
+
+      if (sessionsList) {
+        const syllabusItems = course.detail?.syllabusItems || [];
+        if (syllabusItems.length) {
+          sessionsList.innerHTML = syllabusItems
+            .map(
+              (item, index) => `
+              <li class="flex items-start gap-2">
+                <span class="mt-1 h-2.5 w-2.5 rounded-full ${
+                  index < completedSessions ? "bg-primary" : "bg-slate-300"
+                }"></span>
+                <span>${item}</span>
+              </li>
+            `
+            )
+            .join("");
+        } else {
+          sessionsList.innerHTML =
+            '<li class="text-xs text-slate-500">Chương trình học chi tiết sẽ được cập nhật sau.</li>';
+        }
+      }
+
+      if (totalSessionsEl) {
+        totalSessionsEl.textContent = `${totalSessions} buổi`;
+      }
+      if (regTypeEl) {
+        regTypeEl.textContent =
+          registration.registrationType === "group" ? "Đăng ký theo nhóm" : "Đăng ký cá nhân";
+      }
+      if (paymentMethodEl) {
+        const methodLabel =
+          registration.paymentMethod === "cash"
+            ? "Thanh toán trực tiếp"
+            : registration.paymentMethod === "bank"
+            ? "Chuyển khoản ngân hàng"
+            : "-";
+        paymentMethodEl.textContent = methodLabel;
+      }
+      if (priceEl) {
+        priceEl.textContent = formatPriceVND(course.price || registration.price || 0);
+      }
+
+      if (materialsTitleEl) {
+        materialsTitleEl.textContent = `Tài liệu tham khảo dành cho khóa "${course.title}".`;
+      }
+
+      if (mentorInitialEl || mentorNameEl || mentorRoleEl || mentorEmailEl) {
+        const defaultName = "Mentor Mikademy";
+        const name = defaultName;
+        const email = "mentor@example.com";
+
+        if (mentorInitialEl) {
+          mentorInitialEl.textContent = name.trim()[0] || "M";
+        }
+        if (mentorNameEl) {
+          mentorNameEl.textContent = name;
+        }
+        if (mentorRoleEl) {
+          mentorRoleEl.textContent = `Mentor phụ trách khóa "${course.title}"`;
+        }
+        if (mentorEmailEl) {
+          mentorEmailEl.href = `mailto:${email}`;
+        }
+      }
+
+      // Lịch học cá nhân (thời khóa biểu)
+      function renderSchedule(reg) {
+        if (!scheduleEmptyEl || !scheduleListEl) return;
+        const schedule = reg.schedule || [];
+        if (!schedule.length) {
+          scheduleEmptyEl.classList.remove("hidden");
+          scheduleListEl.classList.add("hidden");
+          scheduleListEl.innerHTML = "";
+          return;
+        }
+
+        scheduleEmptyEl.classList.add("hidden");
+        scheduleListEl.classList.remove("hidden");
+
+        scheduleListEl.innerHTML = schedule
+          .map((item, index) => {
+            const dateLabel = item.date
+              ? new Date(item.date).toLocaleDateString("vi-VN")
+              : "Chưa chọn ngày";
+            const timeLabel = item.time || "";
+            const note = item.note || "";
+            return `
+              <li class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2">
+                <div class="min-w-0">
+                  <p class="text-[13px] font-medium text-slate-900">
+                    ${dateLabel}${timeLabel ? ` · ${timeLabel}` : ""}
+                  </p>
+                  ${
+                    note
+                      ? `<p class="text-[11px] text-slate-500 mt-0.5 truncate">${note}</p>`
+                      : ""
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="ml-2 text-[11px] text-slate-400 hover:text-red-600"
+                  data-mkd-schedule-index="${index}"
+                >
+                  Xóa
+                </button>
+              </li>
+            `;
+          })
+          .join("");
+      }
+
+      // đảm bảo luôn có field schedule là mảng (và lưu lại vào localStorage)
+      if (!Array.isArray(registration.schedule)) {
+        const list = loadRegisteredCourses();
+        const index = list.findIndex((item) => item.courseId === courseId);
+        if (index !== -1) {
+          list[index] = {
+            ...list[index],
+            schedule: []
+          };
+          localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
+          registration.schedule = [];
+        } else {
+          registration.schedule = [];
+        }
+      }
+
+      renderSchedule(registration);
+
+      if (scheduleAddBtn && scheduleDateEl && scheduleSlotEl && scheduleNoteEl) {
+        scheduleAddBtn.addEventListener("click", () => {
+          const dateValue = scheduleDateEl.value;
+          const slotValue = scheduleSlotEl.value;
+          const noteValue = scheduleNoteEl.value.trim();
+
+          if (!dateValue || !slotValue) {
+            alert("Vui lòng chọn ngày và khung giờ học.");
+            return;
+          }
+
+          const SLOT_LABELS = {
+            "08-10": "08:00 - 10:00",
+            "10-12": "10:15 - 12:15",
+            "13-15": "13:15 - 15:15",
+            "15-17": "15:30 - 17:30",
+            "17-19": "17:45 - 19:45",
+            "20-22": "20:00 - 22:00"
+          };
+          const timeValue = SLOT_LABELS[slotValue] || "";
+
+          const list = loadRegisteredCourses();
+          const index = list.findIndex((item) => item.courseId === courseId);
+          if (index === -1) {
+            alert("Không tìm thấy thông tin đăng ký khóa học. Vui lòng quay lại Dashboard và thử lại.");
+            return;
+          }
+
+          const current = list[index];
+          const nextSchedule = Array.isArray(current.schedule) ? [...current.schedule] : [];
+          // Xoá lịch cũ trùng ngày + slot (nếu có) để tránh đè
+          const filtered = nextSchedule.filter(
+            (s) => !(s.date === dateValue && s.slotId === slotValue)
+          );
+          filtered.push({
+            date: dateValue,
+            slotId: slotValue,
+            time: timeValue,
+            note: noteValue
+          });
+
+          list[index] = {
+            ...current,
+            schedule: filtered
+          };
+          localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
+
+          registration.schedule = filtered;
+          renderSchedule(registration);
+          scheduleNoteEl.value = "";
+        });
+      }
+
+      if (scheduleListEl) {
+        scheduleListEl.addEventListener("click", (event) => {
+          const btn = event.target.closest("[data-mkd-schedule-index]");
+          if (!btn) return;
+          const indexStr = btn.getAttribute("data-mkd-schedule-index");
+          const index = indexStr ? parseInt(indexStr, 10) : NaN;
+          if (Number.isNaN(index)) return;
+
+          const list = loadRegisteredCourses();
+          const listIndex = list.findIndex((item) => item.courseId === courseId);
+          if (listIndex === -1) return;
+
+          const current = list[listIndex];
+          const nextSchedule = Array.isArray(current.schedule) ? [...current.schedule] : [];
+          nextSchedule.splice(index, 1);
+
+          list[listIndex] = {
+            ...current,
+            schedule: nextSchedule
+          };
+          localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
+
+          registration.schedule = nextSchedule;
+          renderSchedule(registration);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
+

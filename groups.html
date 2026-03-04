@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhóm học tập - Mikademy Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <h1 class="text-2xl font-semibold text-slate-900 mb-1">Nhóm học tập</h1>
+      <p class="text-sm text-slate-500">Kết nối với các bạn học trong nhóm.</p>
+    </header>
+
+    <div class="rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+      Bạn chưa tham gia nhóm học tập nào.
+    </div>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    renderStudentNavbar("groups");
+    renderSiteFooter();
+  </script>
+</body>
+</html>

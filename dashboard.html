@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Học viên - Mikademy Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#2563eb",
+              soft: "#60a5fa"
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex items-center justify-between gap-4 mb-2">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Dashboard Học viên</h1>
+          <p class="text-sm text-slate-500">
+            Chào mừng <span id="mkd-student-name" class="font-medium text-slate-900">Học viên</span> quản lý lịch học và khóa học của bạn
+          </p>
+        </div>
+        <span class="inline-flex items-center h-7 px-3 rounded-full bg-indigo-50 text-[11px] font-medium text-indigo-700">
+          Học viên
+        </span>
+      </div>
+    </header>
+
+    <section class="grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(0,1.3fr)]">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Khóa học của tôi</h2>
+          </div>
+          <a href="courses.html" class="text-xs font-medium text-primary hover:text-primary-soft">
+            Đăng ký thêm
+          </a>
+        </div>
+        <div id="mkd-my-courses-empty" class="px-6 py-10 text-center text-sm text-slate-500">
+          <p class="mb-3">Chưa có khóa học nào</p>
+          <a href="courses.html" class="inline-flex items-center justify-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft">
+            Đăng ký khóa học
+          </a>
+        </div>
+        <div id="mkd-my-courses-list" class="px-6 py-4 hidden">
+          <div id="mkd-my-courses-success" class="hidden mb-3 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2 text-xs text-emerald-700 text-left">
+            Đăng ký khóa học thành công. Bạn có thể xem chi tiết và sắp xếp lịch học sau.
+          </div>
+          <div id="mkd-my-courses-container" class="space-y-3 text-sm"></div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <div class="px-6 py-4 border-b border-slate-100">
+            <h2 class="text-sm font-semibold text-slate-900">Menu</h2>
+          </div>
+          <div class="px-6 py-4 space-y-2 text-sm">
+            <a href="courses.html" class="block rounded-xl bg-blue-50 text-blue-800 px-4 py-2.5 font-medium">
+              Khóa học
+            </a>
+            <a href="timetable.html" class="block rounded-xl bg-emerald-50 text-emerald-800 px-4 py-2.5 font-medium">
+              Đăng ký lịch học
+            </a>
+            <button class="w-full text-left rounded-xl bg-cyan-50 text-cyan-800 px-4 py-2.5 font-medium">
+              Xem thời khóa biểu
+            </button>
+            <button class="w-full text-left rounded-xl bg-pink-50 text-pink-800 px-4 py-2.5 font-medium">
+              Quản lý thanh toán
+            </button>
+            <button class="w-full text-left rounded-xl bg-purple-50 text-purple-800 px-4 py-2.5 font-medium">
+              Tiến độ học tập
+            </button>
+            <button class="w-full text-left rounded-xl bg-amber-50 text-amber-800 px-4 py-2.5 font-medium">
+              Đánh giá
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <div class="px-6 py-4 border-b border-slate-100">
+            <h2 class="text-sm font-semibold text-slate-900">Buổi học sắp tới</h2>
+          </div>
+          <div class="px-6 py-8 text-center text-sm text-slate-500">
+            <p class="mb-3">Chưa có buổi học nào</p>
+            <button class="inline-flex items-center justify-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft">
+              Đăng ký lịch học
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <!-- Modal hủy đăng ký khóa học -->
+  <div
+    id="mkd-cancel-modal"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40 px-4"
+    aria-hidden="true"
+  >
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
+      <div class="flex items-start justify-between px-6 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">
+            Xác nhận hủy đăng ký khóa học
+          </h2>
+          <p id="mkd-cancel-course-title" class="text-sm text-slate-500 mt-1">
+            Tên khóa học
+          </p>
+        </div>
+        <button
+          type="button"
+          id="mkd-cancel-close"
+          class="h-8 w-8 inline-flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          aria-label="Đóng"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="px-6 py-4 space-y-3 text-sm text-slate-600">
+        <p>
+          Khóa học này hiện mới ở trạng thái <span class="font-medium text-emerald-700">đã đăng ký</span> nhưng
+          <span class="font-medium">chưa xác nhận thanh toán</span>.
+        </p>
+        <p>
+          Nếu bạn tiếp tục hủy, khóa học sẽ được xóa khỏi danh sách <span class="font-medium">Khóa học của tôi</span>.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+        <button
+          type="button"
+          id="mkd-cancel-cancel"
+          class="text-sm text-slate-600 hover:text-slate-900"
+        >
+          Giữ lại
+        </button>
+        <button
+          type="button"
+          id="mkd-cancel-confirm"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-500"
+        >
+          Hủy đăng ký
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal xác nhận thanh toán -->
+  <div
+    id="mkd-payment-modal"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40 px-4"
+    aria-hidden="true"
+  >
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
+      <div class="flex items-start justify-between px-6 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">
+            Xác nhận thanh toán khóa học
+          </h2>
+          <p id="mkd-payment-course-title" class="text-sm text-slate-500 mt-1">
+            Tên khóa học
+          </p>
+        </div>
+        <button
+          type="button"
+          id="mkd-payment-close"
+          class="h-8 w-8 inline-flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          aria-label="Đóng"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="px-6 py-4 space-y-4">
+        <div>
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            Hình thức thanh toán
+          </h3>
+          <div class="space-y-2">
+            <label
+              for="mkd-payment-method-bank"
+              class="flex items-start gap-3 rounded-2xl border border-blue-500 bg-blue-50/60 px-4 py-3 cursor-pointer"
+            >
+              <input
+                id="mkd-payment-method-bank"
+                type="radio"
+                name="mkd-payment-method"
+                value="bank"
+                class="mt-1 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+                checked
+              />
+              <div>
+                <p class="text-sm font-medium text-slate-900">Chuyển khoản ngân hàng</p>
+                <p class="text-xs text-slate-500">
+                  Thanh toán qua tài khoản ngân hàng theo hướng dẫn của trung tâm.
+                </p>
+              </div>
+            </label>
+
+            <label
+              for="mkd-payment-method-cash"
+              class="flex items-start gap-3 rounded-2xl border border-slate-200 px-4 py-3 cursor-pointer hover:border-slate-300"
+            >
+              <input
+                id="mkd-payment-method-cash"
+                type="radio"
+                name="mkd-payment-method"
+                value="cash"
+                class="mt-1 h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+              />
+              <div>
+                <p class="text-sm font-medium text-slate-900">Thanh toán trực tiếp</p>
+                <p class="text-xs text-slate-500">
+                  Đóng học phí tại văn phòng trước buổi học đầu tiên.
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-slate-50 px-4 py-3">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+            Thông tin thanh toán
+          </h3>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-slate-600">Học phí:</span>
+            <span id="mkd-payment-course-price" class="font-semibold text-slate-900">
+              0 ₫
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+        <button
+          type="button"
+          id="mkd-payment-cancel"
+          class="text-sm text-slate-600 hover:text-slate-900"
+        >
+          Để sau
+        </button>
+        <button
+          type="button"
+          id="mkd-payment-confirm"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+        >
+          Xác nhận thanh toán
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById, formatPriceVND } from "./js/courses-data.js";
+    renderStudentNavbar("dashboard");
+    renderSiteFooter();
+
+    // Firebase guard: chặn truy cập nếu chưa đăng nhập
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Cannot read registered courses", e);
+        return [];
+      }
+    }
+
+    function renderMyCourses() {
+      const emptyEl = document.getElementById("mkd-my-courses-empty");
+      const listWrapper = document.getElementById("mkd-my-courses-list");
+      const container = document.getElementById("mkd-my-courses-container");
+      const successEl = document.getElementById("mkd-my-courses-success");
+
+      if (!container || !emptyEl || !listWrapper) return;
+
+      const records = loadRegisteredCourses();
+      if (!records.length) {
+        emptyEl.classList.remove("hidden");
+        listWrapper.classList.add("hidden");
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      listWrapper.classList.remove("hidden");
+
+      const rows = records
+        .sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""))
+        .map((record) => {
+          const course = getCourseById(record.courseId) || record;
+          const typeLabel =
+            record.registrationType === "group" ? "Đăng ký theo nhóm" : "Đăng ký cá nhân";
+          const status = record.status === "learning" ? "learning" : "registered";
+          const created =
+            record.createdAt && !Number.isNaN(Date.parse(record.createdAt))
+              ? new Date(record.createdAt).toLocaleDateString("vi-VN")
+              : "";
+          const statusBadgeText = status === "learning" ? "Đang học" : "Đã đăng ký";
+          const statusBadgeClasses =
+            status === "learning"
+              ? "bg-blue-50 text-blue-700"
+              : "bg-emerald-50 text-emerald-700";
+          const statusHint =
+            status === "learning" ? "" : " · Nhấn vào thẻ để xác nhận thanh toán";
+          return `
+            <div
+              class="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3 cursor-pointer hover:border-primary/60 hover:bg-slate-50 transition-colors"
+              data-mkd-payment-course-id="${record.courseId}"
+              data-mkd-course-status="${status}"
+            >
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-900 truncate">
+                  ${course.title || "Khóa học"}
+                </p>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  ${typeLabel}${created ? ` · Đăng ký: ${created}` : ""} · ${course.sessions || 0} buổi${statusHint}
+                </p>
+                <button
+                  type="button"
+                  class="mt-1 text-xs text-slate-400 hover:text-red-600 underline underline-offset-2"
+                  data-mkd-cancel-course-id="${record.courseId}"
+                >
+                  Hủy đăng ký khóa học
+                </button>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-semibold text-slate-900">
+                  ${formatPriceVND(course.price || record.price || 0)}
+                </p>
+                <span class="inline-flex mt-1 items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadgeClasses}">
+                  ${statusBadgeText}
+                </span>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      container.innerHTML = rows;
+
+      const params = new URLSearchParams(window.location.search);
+      if (successEl && params.get("registered") === "1") {
+        successEl.classList.remove("hidden");
+      }
+    }
+
+    const cancelModal = document.getElementById("mkd-cancel-modal");
+    const cancelCloseBtn = document.getElementById("mkd-cancel-close");
+    const cancelCancelBtn = document.getElementById("mkd-cancel-cancel");
+    const cancelConfirmBtn = document.getElementById("mkd-cancel-confirm");
+    const cancelCourseTitle = document.getElementById("mkd-cancel-course-title");
+    let pendingCancelCourseId = null;
+
+    const paymentModal = document.getElementById("mkd-payment-modal");
+    const paymentCloseBtn = document.getElementById("mkd-payment-close");
+    const paymentCancelBtn = document.getElementById("mkd-payment-cancel");
+    const paymentConfirmBtn = document.getElementById("mkd-payment-confirm");
+    const paymentCourseTitle = document.getElementById("mkd-payment-course-title");
+    const paymentCoursePrice = document.getElementById("mkd-payment-course-price");
+    let pendingPaymentCourseId = null;
+
+    function saveRegisteredCourses(list) {
+      localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
+    }
+
+    function openCancelModal(courseId) {
+      pendingCancelCourseId = courseId;
+      if (cancelCourseTitle) {
+        const course = getCourseById(courseId);
+        cancelCourseTitle.textContent = course?.title || "Khóa học";
+      }
+      if (cancelModal) {
+        cancelModal.classList.remove("hidden");
+        cancelModal.classList.add("flex");
+      }
+    }
+
+    function closeCancelModal() {
+      pendingCancelCourseId = null;
+      if (cancelModal) {
+        cancelModal.classList.add("hidden");
+        cancelModal.classList.remove("flex");
+      }
+    }
+
+    function handleConfirmCancel() {
+      if (!pendingCancelCourseId) return;
+      const current = loadRegisteredCourses();
+      const filtered = current.filter((item) => item.courseId !== pendingCancelCourseId);
+      saveRegisteredCourses(filtered);
+      pendingCancelCourseId = null;
+      closeCancelModal();
+      renderMyCourses();
+    }
+
+    function openPaymentModal(courseId) {
+      pendingPaymentCourseId = courseId;
+      const course = getCourseById(courseId);
+      if (paymentCourseTitle) {
+        paymentCourseTitle.textContent = course?.title || "Khóa học";
+      }
+      if (paymentCoursePrice) {
+        const price = course?.price || 0;
+        paymentCoursePrice.textContent = formatPriceVND(price);
+      }
+      if (paymentModal) {
+        paymentModal.classList.remove("hidden");
+        paymentModal.classList.add("flex");
+      }
+    }
+
+    function closePaymentModal() {
+      pendingPaymentCourseId = null;
+      if (paymentModal) {
+        paymentModal.classList.add("hidden");
+        paymentModal.classList.remove("flex");
+      }
+    }
+
+    function handleConfirmPayment() {
+      if (!pendingPaymentCourseId) return;
+      const methodInputs = document.querySelectorAll('input[name="mkd-payment-method"]');
+      let method = "bank";
+      methodInputs.forEach((input) => {
+        if (input instanceof HTMLInputElement && input.checked) {
+          method = input.value || "bank";
+        }
+      });
+
+      const current = loadRegisteredCourses();
+      const updated = current.map((item) =>
+        item.courseId === pendingPaymentCourseId
+          ? {
+              ...item,
+              status: "learning",
+              paymentMethod: method,
+              paidAt: new Date().toISOString()
+            }
+          : item
+      );
+      saveRegisteredCourses(updated);
+      closePaymentModal();
+      renderMyCourses();
+    }
+
+    const appReadyPromise = new Promise((resolve) => {
+      onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "auth.html";
+        return;
+      }
+
+      const nameEl = document.getElementById("mkd-student-name");
+      const emailEl = document.getElementById("mkd-user-email");
+      const initialEl = document.getElementById("mkd-user-initial");
+
+      if (user.displayName && nameEl) {
+        nameEl.textContent = user.displayName;
+      }
+      if (user.email && emailEl) {
+        emailEl.textContent = user.email;
+      }
+      if (initialEl) {
+        const initial = (user.displayName || user.email || "?").trim()[0] || "?";
+        initialEl.textContent = initial.toUpperCase();
+      }
+      renderMyCourses();
+
+      const container = document.getElementById("mkd-my-courses-container");
+      if (container) {
+        container.addEventListener("click", (event) => {
+          const cancelBtn = event.target.closest("[data-mkd-cancel-course-id]");
+          if (cancelBtn) {
+            event.stopPropagation();
+            const courseId = cancelBtn.getAttribute("data-mkd-cancel-course-id");
+            if (!courseId) return;
+            openCancelModal(courseId);
+            return;
+          }
+
+          const card = event.target.closest("[data-mkd-payment-course-id]");
+          if (card) {
+            const courseId = card.getAttribute("data-mkd-payment-course-id");
+            if (!courseId) return;
+            const status = card.getAttribute("data-mkd-course-status") || "registered";
+            if (status === "learning") {
+              window.location.href = `progress.html?id=${encodeURIComponent(courseId)}`;
+            } else {
+              openPaymentModal(courseId);
+            }
+          }
+        });
+      }
+
+      if (cancelCloseBtn) {
+        cancelCloseBtn.addEventListener("click", () => closeCancelModal());
+      }
+      if (cancelCancelBtn) {
+        cancelCancelBtn.addEventListener("click", () => closeCancelModal());
+      }
+      if (cancelConfirmBtn) {
+        cancelConfirmBtn.addEventListener("click", () => handleConfirmCancel());
+      }
+      if (cancelModal) {
+        cancelModal.addEventListener("click", (event) => {
+          if (event.target === cancelModal) {
+            closeCancelModal();
+          }
+        });
+      }
+
+      if (paymentCloseBtn) {
+        paymentCloseBtn.addEventListener("click", () => closePaymentModal());
+      }
+      if (paymentCancelBtn) {
+        paymentCancelBtn.addEventListener("click", () => closePaymentModal());
+      }
+      if (paymentConfirmBtn) {
+        paymentConfirmBtn.addEventListener("click", () => handleConfirmPayment());
+      }
+      if (paymentModal) {
+        paymentModal.addEventListener("click", (event) => {
+          if (event.target === paymentModal) {
+            closePaymentModal();
+          }
+        });
+      }
+      resolve();
+      });
+    });
+
+    document.addEventListener("click", async (e) => {
+      const btn = e.target.closest("#mkd-logout-btn");
+      if (!btn) return;
+      try {
+        await signOut(auth);
+        window.location.href = "auth.html";
+      } catch (err) {
+        console.error("Logout error:", err);
+      }
+    });
+  </script>
+</body>
+</html>

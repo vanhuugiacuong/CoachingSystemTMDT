@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Khóa học - Mikademy Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+        Các khóa học <span class="text-primary">hiện có</span>
+      </h1>
+      <p class="text-sm text-slate-600 max-w-2xl mb-6">
+        Khám phá các khóa học lập trình được thiết kế bởi chuyên gia, phù hợp với mọi trình độ từ cơ bản đến nâng cao.
+      </p>
+      <div class="relative max-w-xl">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true">🔍</span>
+        <input
+          type="search"
+          id="course-search"
+          placeholder="Tìm kiếm khóa học..."
+          class="w-full h-11 pl-11 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        />
+      </div>
+    </header>
+
+    <section id="courses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Course cards rendered by JS -->
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { courses, formatPriceVND } from "./js/courses-data.js";
+
+    function getCourseIconClasses(courseId) {
+      switch (courseId) {
+        case "angular-beginner":
+          return { bg: "bg-pink-50", text: "text-pink-600" };
+        case "flutter-beginner":
+          return { bg: "bg-sky-50", text: "text-sky-600" };
+        case "firebase-dev":
+          return { bg: "bg-amber-50", text: "text-amber-600" };
+        case "git-foundation":
+          return { bg: "bg-orange-50", text: "text-orange-600" };
+        case "nextjs-15-beginner":
+          return { bg: "bg-slate-900", text: "text-white" };
+        case "devops-beginner":
+          return { bg: "bg-slate-100", text: "text-slate-700" };
+        case "dl-cv":
+          return { bg: "bg-purple-50", text: "text-purple-600" };
+        case "db-data-engineering":
+          return { bg: "bg-emerald-50", text: "text-emerald-600" };
+        case "ml-dummy":
+          return { bg: "bg-indigo-50", text: "text-indigo-600" };
+        default:
+          return { bg: "bg-primary/10", text: "text-primary" };
+      }
+    }
+
+    function renderCourseCard(course) {
+      const detailHref = `course-detail.html?id=${encodeURIComponent(course.id)}`;
+      const iconClasses = getCourseIconClasses(course.id);
+      return `
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+          <div class="p-5 flex flex-col flex-1">
+            <div class="flex items-start gap-3 mb-3">
+              <div class="h-12 w-12 rounded-xl ${iconClasses.bg} flex items-center justify-center ${iconClasses.text} font-bold text-sm shrink-0">
+                ${course.icon}
+              </div>
+              <div class="min-w-0 flex-1">
+                <h2 class="text-base font-semibold text-slate-900 leading-tight">${course.title}</h2>
+                <p class="text-sm text-slate-500 mt-0.5">${course.sessions} buổi</p>
+              </div>
+            </div>
+            <p class="text-sm text-slate-600 line-clamp-3 mb-4 flex-1">${course.shortDescription}</p>
+            <div class="flex items-center gap-1.5 text-sm text-slate-500 mb-3">
+              <span aria-hidden="true">👥</span>
+              <span>0 học viên</span>
+            </div>
+            <p class="text-xl font-bold text-slate-900 mb-4">${formatPriceVND(course.price)}</p>
+            <a href="${detailHref}" class="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft transition-colors">
+              Xem chi tiết
+            </a>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCourses(list) {
+      const grid = document.getElementById("courses-grid");
+      if (!grid) return;
+      grid.innerHTML = list.map(renderCourseCard).join("");
+    }
+
+    function filterCourses(query) {
+      const q = (query || "").trim().toLowerCase();
+      if (!q) return courses;
+      return courses.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          c.shortDescription.toLowerCase().includes(q) ||
+          c.icon.toLowerCase().includes(q)
+      );
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      renderCourses(courses);
+
+      const searchInput = document.getElementById("course-search");
+      if (searchInput) {
+        searchInput.addEventListener("input", function () {
+          renderCourses(filterCourses(this.value));
+        });
+      }
+    });
+  </script>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    renderStudentNavbar("courses");
+    renderSiteFooter();
+  </script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thời khóa biểu - Mikademy Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl font-semibold text-slate-900 mb-1">Thời khóa biểu</h1>
+            <p class="text-sm text-slate-500">
+              Lịch học theo tuần cho các khóa bạn đang tham gia.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <select
+              id="mkd-timetable-course-filter"
+              class="h-8 rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="all">Tất cả khóa học</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-slate-800">Tuần học:</span>
+            <span id="mkd-timetable-week-range" class="text-slate-600">--/--/---- - --/--/----</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              id="mkd-timetable-prev-week"
+              class="h-8 rounded-full border border-slate-200 px-3 font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Tuần trước
+            </button>
+            <button
+              type="button"
+              id="mkd-timetable-today-week"
+              class="h-8 rounded-full border border-slate-900 bg-slate-900 px-3 font-medium text-white hover:bg-slate-800"
+            >
+              Tuần này
+            </button>
+            <button
+              type="button"
+              id="mkd-timetable-next-week"
+              class="h-8 rounded-full border border-slate-200 px-3 font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Tuần sau
+            </button>
+            <div class="flex items-center gap-1">
+              <span class="text-slate-500">Chọn ngày</span>
+              <input
+                id="mkd-timetable-date-picker"
+                type="date"
+                class="h-8 rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="mkd-timetable-content" class="space-y-4">
+      <div
+        id="mkd-timetable-empty"
+        class="rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500"
+      >
+        Hiện bạn chưa có buổi học nào trong lịch. Hãy vào trang
+        <a href="progress.html" class="text-primary hover:text-primary-soft font-medium">Tiến độ học tập</a>
+        của từng khóa để sắp xếp lịch học.
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 overflow-x-auto hidden" id="mkd-timetable-grid-wrapper">
+        <table class="min-w-full text-xs">
+          <thead>
+            <tr class="border-b border-slate-100 bg-slate-50">
+              <th class="w-24 px-3 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                Giờ
+              </th>
+              <th
+                v-for="day in 7"
+                class="px-3 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide"
+              >
+                <!-- sẽ được thay bằng JS -->
+              </th>
+            </tr>
+          </thead>
+          <tbody id="mkd-timetable-grid-body">
+            <!-- hàng thời gian sẽ được render bằng JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <!-- Modal chọn khóa học cho ô lịch -->
+  <div
+    id="mkd-timetable-slot-modal"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/40 px-4"
+    aria-hidden="true"
+  >
+    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200">
+      <div class="flex items-start justify-between px-6 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900">
+            Đặt lịch học cho khung giờ
+          </h2>
+          <p id="mkd-slot-modal-summary" class="text-sm text-slate-500 mt-1">
+            --
+          </p>
+        </div>
+        <button
+          type="button"
+          id="mkd-slot-modal-close"
+          class="h-8 w-8 inline-flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          aria-label="Đóng"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="px-6 py-4 space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">
+            Chọn khóa học
+          </label>
+          <select
+            id="mkd-slot-modal-course"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          >
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">
+            Ghi chú (tuỳ chọn)
+          </label>
+          <input
+            id="mkd-slot-modal-note"
+            type="text"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            placeholder="Ví dụ: Học online qua Zoom, ôn lại buổi 1..."
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+        <button
+          type="button"
+          id="mkd-slot-modal-cancel"
+          class="text-sm text-slate-600 hover:text-slate-900"
+        >
+          Hủy
+        </button>
+        <button
+          type="button"
+          id="mkd-slot-modal-save"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+        >
+          Lưu lịch học
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById } from "./js/courses-data.js";
+
+    renderStudentNavbar("timetable");
+    renderSiteFooter();
+
+    const TIME_SLOTS = [
+      { id: "08-10", label: "08:00 - 10:00" },
+      { id: "10-12", label: "10:15 - 12:15" },
+      { id: "13-15", label: "13:15 - 15:15" },
+      { id: "15-17", label: "15:30 - 17:30" },
+      { id: "17-19", label: "17:45 - 19:45" },
+      { id: "20-22", label: "20:00 - 22:00" }
+    ];
+
+    const WEEKDAY_NAMES = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Cannot read registered courses", e);
+        return [];
+      }
+    }
+
+    function saveRegisteredCourses(list) {
+      localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
+    }
+
+    function buildSessions() {
+      const registrations = loadRegisteredCourses();
+      const sessions = [];
+
+      registrations.forEach((reg) => {
+        if (!Array.isArray(reg.schedule) || !reg.schedule.length) return;
+        const course = getCourseById(reg.courseId) || reg;
+        reg.schedule.forEach((slot) => {
+          if (!slot.date) return;
+          sessions.push({
+            courseId: reg.courseId,
+            courseTitle: course.title || "Khóa học",
+            status: reg.status || "registered",
+            date: slot.date,
+            slotId: slot.slotId || null,
+            time: slot.time || "",
+            note: slot.note || "",
+            registrationType: reg.registrationType || "individual"
+          });
+        });
+      });
+
+      return sessions;
+    }
+
+    function getStartOfWeek(date) {
+      const d = new Date(date);
+      const day = d.getDay(); // 0 = CN
+      const diff = d.getDate() - day; // start from CN
+      const start = new Date(d);
+      start.setDate(diff);
+      start.setHours(0, 0, 0, 0);
+      return start;
+    }
+
+    function formatWeekRange(start) {
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      const fmt = (d) => d.toLocaleDateString("vi-VN");
+      return `${fmt(start)} - ${fmt(end)}`;
+    }
+
+    let currentDate = new Date();
+
+    function renderTimetable() {
+      const emptyEl = document.getElementById("mkd-timetable-empty");
+      const gridWrapper = document.getElementById("mkd-timetable-grid-wrapper");
+      const gridBody = document.getElementById("mkd-timetable-grid-body");
+      const weekRangeEl = document.getElementById("mkd-timetable-week-range");
+      const filterSelect = document.getElementById("mkd-timetable-course-filter");
+      const datePicker = document.getElementById("mkd-timetable-date-picker");
+      if (!emptyEl || !gridWrapper || !gridBody || !weekRangeEl || !filterSelect) return;
+
+      const allSessions = buildSessions();
+
+      // setup filter options (unique courses)
+      const uniqueCourses = new Map();
+      allSessions.forEach((s) => {
+        if (!uniqueCourses.has(s.courseId)) {
+          uniqueCourses.set(s.courseId, s.courseTitle);
+        }
+      });
+      if (filterSelect.options.length === 1) {
+        uniqueCourses.forEach((title, id) => {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = title;
+          filterSelect.appendChild(opt);
+        });
+      }
+
+      const selectedCourseId = filterSelect.value;
+      const filteredSessions =
+        selectedCourseId === "all"
+          ? allSessions
+          : allSessions.filter((s) => s.courseId === selectedCourseId);
+
+      const startOfWeek = getStartOfWeek(currentDate);
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        const iso = d.toISOString().slice(0, 10);
+        days.push({ date: d, iso });
+      }
+
+      weekRangeEl.textContent = formatWeekRange(startOfWeek);
+      if (datePicker) {
+        datePicker.value = currentDate.toISOString().slice(0, 10);
+      }
+
+      if (!filteredSessions.length) {
+        emptyEl.classList.remove("hidden");
+        gridWrapper.classList.add("hidden");
+        gridBody.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      gridWrapper.classList.remove("hidden");
+
+      // Map sessions by day+slot
+      const sessionMap = new Map();
+      filteredSessions.forEach((s) => {
+        const keyBase = s.date;
+        let slotId = s.slotId;
+        if (!slotId) {
+          // try map by time label
+          const found = TIME_SLOTS.find((t) => t.label === s.time);
+          slotId = found ? found.id : null;
+        }
+        if (!slotId) return;
+        const key = `${keyBase}|${slotId}`;
+        // only keep first for that slot
+        if (!sessionMap.has(key)) {
+          sessionMap.set(key, s);
+        }
+      });
+
+      // Render header days
+      const headerRow = gridWrapper.querySelector("thead tr");
+      if (headerRow) {
+        // keep first "Giờ" th, replace the rest 7
+        while (headerRow.children.length > 1) {
+          headerRow.removeChild(headerRow.lastElementChild);
+        }
+        days.forEach((day, idx) => {
+          const th = document.createElement("th");
+          th.className =
+            "px-3 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide";
+          const isToday =
+            new Date().toISOString().slice(0, 10) === day.iso;
+          th.innerHTML = `
+            <div class="flex flex-col">
+              <span class="${isToday ? "text-primary" : "text-slate-500"}">${
+            WEEKDAY_NAMES[day.date.getDay()]
+          }</span>
+              <span class="text-slate-900 font-semibold">${day.date
+                .getDate()
+                .toString()
+                .padStart(2, "0")}/${(day.date.getMonth() + 1)
+                .toString()
+                .padStart(2, "0")}</span>
+            </div>
+          `;
+          headerRow.appendChild(th);
+        });
+      }
+
+      // Render body
+      gridBody.innerHTML = "";
+      TIME_SLOTS.forEach((slot) => {
+        const tr = document.createElement("tr");
+        tr.className = "border-t border-slate-100";
+        const timeCell = document.createElement("td");
+        timeCell.className =
+          "px-3 py-3 align-top text-[11px] font-medium text-slate-500 whitespace-nowrap";
+        timeCell.textContent = slot.label;
+        tr.appendChild(timeCell);
+
+        days.forEach((day) => {
+          const key = `${day.iso}|${slot.id}`;
+          const s = sessionMap.get(key);
+          const td = document.createElement("td");
+          td.className = "px-1 py-2 align-top";
+          if (s) {
+            const statusLabel = s.status === "learning" ? "Đang học" : "Đã đăng ký";
+            const statusClasses =
+              s.status === "learning"
+                ? "bg-blue-50 text-blue-700"
+                : "bg-emerald-50 text-emerald-700";
+            const note =
+              s.note && s.note.trim()
+                ? `<p class="mt-0.5 text-[11px] text-slate-500 truncate">${s.note}</p>`
+                : "";
+            td.innerHTML = `
+              <button
+                type="button"
+                class="w-full h-16 sm:h-20 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left hover:border-primary/50 hover:bg-slate-50 transition-colors flex flex-col justify-between"
+                data-mkd-slot-date="${day.iso}"
+                data-mkd-slot-id="${slot.id}"
+                data-mkd-slot-course-id="${s.courseId}"
+              >
+                <div class="min-w-0">
+                  <p class="text-[12px] font-medium text-slate-900 truncate">
+                    ${s.courseTitle}
+                  </p>
+                  ${note}
+                </div>
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusClasses}">
+                  ${statusLabel}
+                </span>
+              </button>
+            `;
+          } else {
+            td.innerHTML = `
+              <button
+                type="button"
+                class="w-full h-16 sm:h-20 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-2.5 py-2 text-left hover:border-primary/40 hover:bg-white transition-colors flex flex-col justify-center"
+                data-mkd-slot-date="${day.iso}"
+                data-mkd-slot-id="${slot.id}"
+              >
+                <span class="text-[11px] text-slate-400">Chưa lên lịch</span>
+                <span class="mt-0.5 text-[10px] text-slate-400">${slot.label}</span>
+              </button>
+            `;
+          }
+          tr.appendChild(td);
+        });
+
+        gridBody.appendChild(tr);
+      });
+    }
+
+    const filterSelectEl = document.getElementById("mkd-timetable-course-filter");
+    const prevWeekBtn = document.getElementById("mkd-timetable-prev-week");
+    const nextWeekBtn = document.getElementById("mkd-timetable-next-week");
+    const todayWeekBtn = document.getElementById("mkd-timetable-today-week");
+    const datePickerEl = document.getElementById("mkd-timetable-date-picker");
+    const gridWrapperEl = document.getElementById("mkd-timetable-grid-wrapper");
+
+    const slotModal = document.getElementById("mkd-timetable-slot-modal");
+    const slotModalClose = document.getElementById("mkd-slot-modal-close");
+    const slotModalCancel = document.getElementById("mkd-slot-modal-cancel");
+    const slotModalSave = document.getElementById("mkd-slot-modal-save");
+    const slotModalSummary = document.getElementById("mkd-slot-modal-summary");
+    const slotModalCourseSelect = document.getElementById("mkd-slot-modal-course");
+    const slotModalNoteInput = document.getElementById("mkd-slot-modal-note");
+
+    let selectedSlotDate = null;
+    let selectedSlotId = null;
+
+    function openSlotModal(dateIso, slotId) {
+      selectedSlotDate = dateIso;
+      selectedSlotId = slotId;
+
+      const d = new Date(dateIso);
+      const weekday = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"][
+        d.getDay()
+      ];
+      const slot = TIME_SLOTS.find((t) => t.id === slotId);
+      const label = slot ? slot.label : "";
+      if (slotModalSummary) {
+        slotModalSummary.textContent = `${weekday}, ${d.toLocaleDateString(
+          "vi-VN"
+        )} · ${label}`;
+      }
+
+      // populate courses (đã đăng ký)
+      if (slotModalCourseSelect) {
+        slotModalCourseSelect.innerHTML = "";
+        const regs = loadRegisteredCourses();
+        if (!regs.length) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "Chưa có khóa học nào được đăng ký";
+          slotModalCourseSelect.appendChild(opt);
+        } else {
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "Chọn một khóa học...";
+          slotModalCourseSelect.appendChild(placeholder);
+          regs.forEach((reg) => {
+            const course = getCourseById(reg.courseId) || reg;
+            const opt = document.createElement("option");
+            opt.value = reg.courseId;
+            opt.textContent = course.title || "Khóa học";
+            slotModalCourseSelect.appendChild(opt);
+          });
+        }
+      }
+
+      if (slotModalNoteInput) {
+        slotModalNoteInput.value = "";
+      }
+
+      if (slotModal) {
+        slotModal.classList.remove("hidden");
+        slotModal.classList.add("flex");
+      }
+    }
+
+    function closeSlotModal() {
+      selectedSlotDate = null;
+      selectedSlotId = null;
+      if (slotModal) {
+        slotModal.classList.add("hidden");
+        slotModal.classList.remove("flex");
+      }
+    }
+
+    if (filterSelectEl) {
+      filterSelectEl.addEventListener("change", () => {
+        renderTimetable();
+      });
+    }
+
+    if (prevWeekBtn) {
+      prevWeekBtn.addEventListener("click", () => {
+        currentDate.setDate(currentDate.getDate() - 7);
+        renderTimetable();
+      });
+    }
+    if (nextWeekBtn) {
+      nextWeekBtn.addEventListener("click", () => {
+        currentDate.setDate(currentDate.getDate() + 7);
+        renderTimetable();
+      });
+    }
+    if (todayWeekBtn) {
+      todayWeekBtn.addEventListener("click", () => {
+        currentDate = new Date();
+        renderTimetable();
+      });
+    }
+    if (datePickerEl) {
+      datePickerEl.addEventListener("change", () => {
+        const val = datePickerEl.value;
+        if (!val) return;
+        currentDate = new Date(val);
+        renderTimetable();
+      });
+    }
+
+    if (gridWrapperEl) {
+      gridWrapperEl.addEventListener("click", (event) => {
+        const btn = event.target.closest("button[data-mkd-slot-date][data-mkd-slot-id]");
+        if (!btn) return;
+        const courseId = btn.getAttribute("data-mkd-slot-course-id");
+        const dateIso = btn.getAttribute("data-mkd-slot-date");
+        const slotId = btn.getAttribute("data-mkd-slot-id");
+        if (!dateIso || !slotId) return;
+
+        if (courseId) {
+          window.location.href = `progress.html?id=${encodeURIComponent(courseId)}`;
+        } else {
+          openSlotModal(dateIso, slotId);
+        }
+      });
+    }
+
+    if (slotModalClose) {
+      slotModalClose.addEventListener("click", () => closeSlotModal());
+    }
+    if (slotModalCancel) {
+      slotModalCancel.addEventListener("click", () => closeSlotModal());
+    }
+    if (slotModal) {
+      slotModal.addEventListener("click", (event) => {
+        if (event.target === slotModal) {
+          closeSlotModal();
+        }
+      });
+    }
+    if (slotModalSave) {
+      slotModalSave.addEventListener("click", () => {
+        if (!selectedSlotDate || !selectedSlotId || !slotModalCourseSelect) return;
+        const courseId = slotModalCourseSelect.value;
+        if (!courseId) {
+          alert("Vui lòng chọn khóa học.");
+          return;
+        }
+        const note = slotModalNoteInput ? slotModalNoteInput.value.trim() : "";
+        const regs = loadRegisteredCourses();
+        const index = regs.findIndex((r) => r.courseId === courseId);
+        if (index === -1) {
+          alert("Không tìm thấy thông tin đăng ký khóa học. Vui lòng đăng ký lại.");
+          return;
+        }
+        const course = getCourseById(courseId) || regs[index];
+        const label = (TIME_SLOTS.find((t) => t.id === selectedSlotId) || {}).label || "";
+
+        const current = regs[index];
+        const nextSchedule = Array.isArray(current.schedule) ? [...current.schedule] : [];
+        // remove any existing entry for cùng ngày + slot để tránh trùng
+        const filtered = nextSchedule.filter(
+          (s) => !(s.date === selectedSlotDate && s.slotId === selectedSlotId)
+        );
+        filtered.push({
+          date: selectedSlotDate,
+          slotId: selectedSlotId,
+          time: label,
+          note
+        });
+
+        regs[index] = {
+          ...current,
+          schedule: filtered
+        };
+        saveRegisteredCourses(regs);
+
+        closeSlotModal();
+        renderTimetable();
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      currentDate = new Date();
+      renderTimetable();
+    });
+  </script>
+</body>
+</html>
