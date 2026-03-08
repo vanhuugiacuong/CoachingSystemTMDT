@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chi tiết khóa học - Mikademy Coach</title>
+  <title>Chi tiết khóa học - BCN Coach</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -240,28 +240,50 @@
     renderSiteFooter();
 
     function getCourseIconClasses(courseId) {
+      let bg, text, hex;
       switch (courseId) {
+        case "2k-prep":
+          bg = "bg-blue-50"; text = "text-blue-600"; hex = "2563eb"; break;
         case "angular-beginner":
-          return { bg: "bg-pink-50", text: "text-pink-600" };
+          bg = "bg-pink-50"; text = "text-pink-600"; hex = "db2777"; break;
         case "flutter-beginner":
-          return { bg: "bg-sky-50", text: "text-sky-600" };
+          bg = "bg-sky-50"; text = "text-sky-600"; hex = "0284c7"; break;
         case "firebase-dev":
-          return { bg: "bg-amber-50", text: "text-amber-600" };
+          bg = "bg-amber-50"; text = "text-amber-600"; hex = "d97706"; break;
         case "git-foundation":
-          return { bg: "bg-orange-50", text: "text-orange-600" };
+          bg = "bg-orange-50"; text = "text-orange-600"; hex = "ea580c"; break;
         case "nextjs-15-beginner":
-          return { bg: "bg-slate-900", text: "text-white" };
+          bg = "bg-slate-900"; text = "text-white"; hex = "ffffff"; break;
         case "devops-beginner":
-          return { bg: "bg-slate-100", text: "text-slate-700" };
+          bg = "bg-slate-100"; text = "text-slate-700"; hex = "475569"; break;
         case "dl-cv":
-          return { bg: "bg-purple-50", text: "text-purple-600" };
+          bg = "bg-purple-50"; text = "text-purple-600"; hex = "9333ea"; break;
+        case "nestjs-basic":
+          bg = "bg-sky-50"; text = "text-sky-600"; hex = "0284c7"; break;
         case "db-data-engineering":
-          return { bg: "bg-emerald-50", text: "text-emerald-600" };
+          bg = "bg-emerald-50"; text = "text-emerald-600"; hex = "059669"; break;
+        case "llm-genai-beginner":
         case "ml-dummy":
-          return { bg: "bg-indigo-50", text: "text-indigo-600" };
+          bg = "bg-indigo-50"; text = "text-indigo-600"; hex = "4f46e5"; break;
+        case "oop":
+        case "intro-programming":
+        case "python-ai":
+          bg = "bg-primary/10"; text = "text-primary"; hex = "2563eb"; break;
         default:
-          return { bg: "bg-slate-100", text: "text-slate-900" };
+          bg = "bg-slate-100"; text = "text-slate-900"; hex = "475569";
       }
+      return { bg, text, iconHex: hex };
+    }
+
+    function getCourseIconSrc(course, iconClasses) {
+      const slug = course.iconSlug;
+      if (!slug) return null;
+      const hex = iconClasses.iconHex || "475569";
+      if (slug.includes(":")) {
+        const [prefix, icon] = slug.split(":");
+        return `https://api.iconify.design/${prefix}/${icon}.svg?width=28&height=28&color=%23${hex}`;
+      }
+      return `https://cdn.simpleicons.org/${slug}/${hex}`;
     }
 
     const params = new URLSearchParams(window.location.search);
@@ -337,7 +359,7 @@
     if (!course) {
       if (notFound) notFound.classList.remove("hidden");
     } else {
-      document.title = `${course.title} - Mikademy Coach`;
+      document.title = `${course.title} - BCN Coach`;
 
       const iconEl = document.getElementById("course-icon");
       const titleEl = document.getElementById("course-title");
@@ -345,8 +367,14 @@
 
       if (iconEl) {
         const iconClasses = getCourseIconClasses(course.id);
-        iconEl.textContent = course.icon || "?";
-        iconEl.className = `h-12 w-12 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 ${iconClasses.bg} ${iconClasses.text}`;
+        iconEl.className = `h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${iconClasses.bg} ${iconClasses.text}`;
+        const iconSrc = getCourseIconSrc(course, iconClasses);
+        if (iconSrc) {
+          iconEl.innerHTML = `<img src="${iconSrc}" alt="" class="w-7 h-7 object-contain" width="28" height="28" />`;
+        } else {
+          iconEl.textContent = course.icon || "?";
+          iconEl.classList.add("font-bold", "text-lg");
+        }
       }
       if (titleEl) titleEl.textContent = course.title;
 

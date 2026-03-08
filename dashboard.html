@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Học viên - Mikademy Coach</title>
+  <title>Dashboard Học viên - BCN Coach</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -75,18 +75,18 @@
             <a href="timetable.html" class="block rounded-xl bg-emerald-50 text-emerald-800 px-4 py-2.5 font-medium">
               Đăng ký lịch học
             </a>
-            <button class="w-full text-left rounded-xl bg-cyan-50 text-cyan-800 px-4 py-2.5 font-medium">
+            <a href="timetable.html" class="block rounded-xl bg-cyan-50 text-cyan-800 px-4 py-2.5 font-medium">
               Xem thời khóa biểu
-            </button>
-            <button class="w-full text-left rounded-xl bg-pink-50 text-pink-800 px-4 py-2.5 font-medium">
+            </a>
+            <a href="profile.html?section=invoices" class="block rounded-xl bg-pink-50 text-pink-800 px-4 py-2.5 font-medium">
               Quản lý thanh toán
-            </button>
-            <button class="w-full text-left rounded-xl bg-purple-50 text-purple-800 px-4 py-2.5 font-medium">
+            </a>
+            <a href="progress-list.html" class="block rounded-xl bg-purple-50 text-purple-800 px-4 py-2.5 font-medium">
               Tiến độ học tập
-            </button>
-            <button class="w-full text-left rounded-xl bg-amber-50 text-amber-800 px-4 py-2.5 font-medium">
+            </a>
+            <a href="reviews.html" class="block rounded-xl bg-amber-50 text-amber-800 px-4 py-2.5 font-medium">
               Đánh giá
-            </button>
+            </a>
           </div>
         </div>
 
@@ -403,6 +403,40 @@
       localStorage.setItem("mkd-registered-courses", JSON.stringify(list));
     }
 
+    function loadInvoices() {
+      try {
+        const raw = localStorage.getItem("mkd-invoices");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Cannot read invoices", e);
+        return [];
+      }
+    }
+
+    function saveInvoices(list) {
+      localStorage.setItem("mkd-invoices", JSON.stringify(list));
+    }
+
+    function createInvoice({ courseId, method, amount }) {
+      const course = getCourseById(courseId);
+      const invoices = loadInvoices();
+      const id = `INV-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 6)}`.toUpperCase();
+      const invoice = {
+        id,
+        courseId,
+        courseTitle: course?.title || "Khóa học",
+        amount: amount ?? course?.price ?? 0,
+        method,
+        status: "paid",
+        createdAt: new Date().toISOString()
+      };
+      invoices.unshift(invoice);
+      saveInvoices(invoices);
+      return invoice;
+    }
+
     function openCancelModal(courseId) {
       pendingCancelCourseId = courseId;
       if (cancelCourseTitle) {
@@ -467,6 +501,14 @@
         }
       });
 
+      // Chuyển khoản: dẫn sang trang giả lập transfer/QR
+      if (method === "bank") {
+        const courseId = pendingPaymentCourseId;
+        closePaymentModal();
+        window.location.href = `payment-transfer.html?courseId=${encodeURIComponent(courseId)}`;
+        return;
+      }
+
       const current = loadRegisteredCourses();
       const updated = current.map((item) =>
         item.courseId === pendingPaymentCourseId
@@ -479,8 +521,15 @@
           : item
       );
       saveRegisteredCourses(updated);
+      const invoice = createInvoice({
+        courseId: pendingPaymentCourseId,
+        method,
+        amount: getCourseById(pendingPaymentCourseId)?.price || 0
+      });
       closePaymentModal();
       renderMyCourses();
+      // Sau thanh toán trực tiếp -> chuyển sang trang thông tin/hóa đơn
+      window.location.href = `profile.html?section=invoices&invoiceId=${encodeURIComponent(invoice.id)}`;
     }
 
     const appReadyPromise = new Promise((resolve) => {

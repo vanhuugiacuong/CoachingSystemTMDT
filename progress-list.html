@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiến độ học tập - BCN Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <h1 class="text-2xl font-semibold text-slate-900 mb-1">Tiến độ học tập</h1>
+      <p class="text-sm text-slate-500">
+        Chọn khóa học để xem tiến độ, tài liệu và lịch học.
+      </p>
+    </header>
+
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+        <h2 class="text-sm font-semibold text-slate-900">Khóa học của bạn</h2>
+        <a href="courses.html" class="text-xs font-medium text-primary hover:text-primary-soft">
+          Xem khóa học
+        </a>
+      </div>
+      <div class="px-6 py-4">
+        <div
+          id="mkd-progress-list-empty"
+          class="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500"
+        >
+          Bạn chưa có khóa học nào đang học. Hãy thanh toán một khóa để bắt đầu.
+        </div>
+        <div id="mkd-progress-list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 hidden"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById, formatPriceVND } from "./js/courses-data.js";
+
+    renderStudentNavbar("dashboard");
+    renderSiteFooter();
+
+    // Firebase guard
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function renderList() {
+      const emptyEl = document.getElementById("mkd-progress-list-empty");
+      const listEl = document.getElementById("mkd-progress-list");
+      if (!emptyEl || !listEl) return;
+
+      const regs = loadRegisteredCourses();
+      const learning = regs.filter((r) => r.status === "learning");
+
+      if (!learning.length) {
+        emptyEl.classList.remove("hidden");
+        listEl.classList.add("hidden");
+        listEl.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      listEl.classList.remove("hidden");
+
+      listEl.innerHTML = learning
+        .map((r) => {
+          const course = getCourseById(r.courseId) || r;
+          return `
+            <a
+              href="progress.html?id=${encodeURIComponent(r.courseId)}"
+              class="block rounded-2xl border border-slate-200 hover:border-primary/60 hover:bg-slate-50 transition-colors p-4"
+            >
+              <p class="text-sm font-semibold text-slate-900 truncate">${course.title || "Khóa học"}</p>
+              <p class="text-xs text-slate-500 mt-1">${course.sessions || 0} buổi · ${formatPriceVND(course.price || r.price || 0)}</p>
+              <span class="inline-flex mt-3 items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">
+                Đang học
+              </span>
+            </a>
+          `;
+        })
+        .join("");
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "auth.html";
+        return;
+      }
+      renderList();
+    });
+  </script>
+</body>
+</html>
+

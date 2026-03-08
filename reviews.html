@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đánh giá - BCN Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <h1 class="text-2xl font-semibold text-slate-900 mb-1">Đánh giá</h1>
+      <p class="text-sm text-slate-500">
+        Trang mô phỏng để hoàn thiện luồng menu. Tính năng đánh giá sẽ được bổ sung sau.
+      </p>
+    </header>
+
+    <div class="rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+      Hiện chưa có đánh giá nào. Vui lòng quay lại sau.
+    </div>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    renderStudentNavbar("dashboard");
+    renderSiteFooter();
+
+    // Firebase guard
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "auth.html";
+      }
+    });
+  </script>
+</body>
+</html>
+

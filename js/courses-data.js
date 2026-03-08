@@ -7,6 +7,7 @@ export const courses = [
       "Chuẩn bị kỹ năng và hồ sơ ứng tuyển với mức lương từ 2,000 USD / tháng. Học phí niêm yết là chi phí cơ bản.",
     price: 2000000,
     icon: "2K",
+    iconSlug: "lucide:trending-up",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -42,6 +43,7 @@ export const courses = [
       "Git Foundation là khóa học nền tảng giúp người học làm quen và nắm vững các khái niệm cơ bản nhất về Git.",
     price: 500000,
     icon: "Git",
+    iconSlug: "git",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -71,6 +73,7 @@ export const courses = [
       "Angular là framework của Google, được enterprise và công ty lớn lựa chọn vì kiến trúc rõ ràng, TypeScript mạnh mẽ.",
     price: 10000000,
     icon: "A",
+    iconSlug: "angular",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -107,6 +110,7 @@ export const courses = [
       "Flutter giải quyết: code một lần, chạy trên cả iOS và Android. Phù hợp cho người muốn làm app mobile.",
     price: 10000000,
     icon: "F",
+    iconSlug: "flutter",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -140,6 +144,7 @@ export const courses = [
       "Computer Vision đang ở khắp mọi nơi: Face ID, camera an ninh, xe tự lái, TikTok/Instagram filters...",
     price: 10000000,
     icon: "DL",
+    iconSlug: "lucide:brain",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -172,6 +177,7 @@ export const courses = [
       "NestJS là framework backend TypeScript được thiết kế với kiến trúc rõ ràng, dễ maintain và scale.",
     price: 9500000,
     icon: "N",
+    iconSlug: "nestjs",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -204,6 +210,7 @@ export const courses = [
       "Database là nền tảng của mọi ứng dụng - từ web app đơn giản đến hệ thống enterprise phức tạp.",
     price: 8000000,
     icon: "DB",
+    iconSlug: "lucide:database",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -235,6 +242,7 @@ export const courses = [
       "ChatGPT đã thay đổi game hoàn toàn. Biết cách làm việc với LLMs là kỹ năng không thể thiếu.",
     price: 10000000,
     icon: "AI",
+    iconSlug: "lucide:sparkles",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -267,6 +275,7 @@ export const courses = [
       "DevOps là cầu nối giúp developer đưa sản phẩm từ localhost lên production một cách chuyên nghiệp.",
     price: 10000000,
     icon: "⚙",
+    iconSlug: "lucide:settings",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -299,6 +308,7 @@ export const courses = [
       "Next.js là React framework mạnh nhất hiện nay, được Vercel phát triển và dùng bởi hàng triệu developers.",
     price: 10000000,
     icon: "Nx",
+    iconSlug: "nextdotjs",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -330,6 +340,7 @@ export const courses = [
       "OOP là paradigm lập trình quan trọng nhất trong phát triển phần mềm hiện đại.",
     price: 7000000,
     icon: "OOP",
+    iconSlug: "lucide:box",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -362,6 +373,7 @@ export const courses = [
       "Lập trình là kỹ năng cốt lõi của thế kỷ 21, giúp bạn tư duy logic và giải quyết vấn đề tốt hơn.",
     price: 7000000,
     icon: "</>",
+    iconSlug: "lucide:code",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -394,6 +406,7 @@ export const courses = [
       "Machine Learning là nền tảng của AI hiện đại, giúp máy tính học từ dữ liệu.",
     price: 10000000,
     icon: "ML",
+    iconSlug: "lucide:brain",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -425,6 +438,7 @@ export const courses = [
       "Python là ngôn ngữ số 1 cho AI/ML nhờ syntax đơn giản và hệ sinh thái thư viện phong phú.",
     price: 8000000,
     icon: "Py",
+    iconSlug: "python",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",
@@ -459,6 +473,7 @@ export const courses = [
       "Firebase là Backend-as-a-Service (BaaS) của Google, giúp xây dựng app nhanh với auth, database, storage.",
     price: 6000000,
     icon: "🔥",
+    iconSlug: "firebase",
     categoryBadge: { label: "Học viên", tone: "emerald" },
     detail: {
       overviewTitle: "Mô tả khóa học",

@@ -24,10 +24,9 @@ export function renderStudentNavbar(active) {
         <div class="flex h-16 items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
-              <div class="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-semibold text-lg shadow-md">
-                M
-              </div>
-              <span class="font-semibold text-slate-900">Mikademy Coach</span>
+            <a href="landing.html" class="flex items-center gap-2">
+              <img src="asset/logo.png" alt="Mikademy Coach" class="w-[200px] h-[auto] object-contain" />
+            </a>
             </div>
           </div>
 
@@ -51,13 +50,15 @@ export function renderStudentNavbar(active) {
           </nav>
 
           <div class="flex items-center gap-3">
-            <div class="hidden sm:flex flex-col items-end">
-              <span class="text-xs font-medium text-slate-900">Học viên</span>
-              <span class="text-[11px] text-slate-500" id="mkd-user-email">Student</span>
-            </div>
-            <div class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
-              <span id="mkd-user-initial">C</span>
-            </div>
+            <a href="profile.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+              <div class="hidden sm:flex flex-col items-end">
+                <span class="text-xs font-medium text-slate-900">Học viên</span>
+                <span class="text-[11px] text-slate-500" id="mkd-user-email">Student</span>
+              </div>
+              <div class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
+                <span id="mkd-user-initial">C</span>
+              </div>
+            </a>
             <button
               type="button"
               id="mkd-logout-btn"
@@ -82,11 +83,8 @@ export function renderSiteFooter() {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div class="max-w-sm">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-semibold text-lg shadow-md">
-                M
-              </div>
-              <span class="font-semibold text-slate-900">Mikademy Coach</span>
+            <div class="flex items-center gap-2">
+              <img src="asset/logo.png" alt="Mikademy Coach" class="w-[100px] h-[auto] object-contain" />
             </div>
             <p class="text-sm text-slate-500">
               Nền tảng coaching 1-1 chuyên nghiệp hàng đầu Việt Nam. Giúp bạn học tập hiệu quả hơn với sự hướng dẫn tận tình từ các chuyên gia.
@@ -114,7 +112,7 @@ export function renderSiteFooter() {
             <div>
               <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Công ty</h3>
               <ul class="space-y-1.5 text-slate-600">
-                <li><a href="#" class="hover:text-slate-900">Về chúng tôi</a></li>
+                <li><a href="contact.html" class="hover:text-slate-900">Liên hệ</a></li>
                 <li><span class="font-medium">Hotline: 123 456 789</span></li>
               </ul>
             </div>

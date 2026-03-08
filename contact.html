@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liên hệ & Địa điểm – BCN Coach</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    #mkd-map { z-index: 0; }
+    .leaflet-container { font-family: inherit; border-radius: 1rem; }
+    /* custom marker popup */
+    .mkd-popup .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      padding: 0;
+    }
+    .mkd-popup .leaflet-popup-content { margin: 0; }
+    /* toast animation */
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+    .mkd-toast { animation: slideUp 0.3s ease; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+
+  <!-- ───────────────── NAVBAR ───────────────── -->
+  <header class="w-full border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex h-16 items-center justify-between gap-4">
+        <!-- Logo -->
+        <a href="landing.html" class="flex items-center gap-2 shrink-0">
+          <img src="asset/logo.png" alt="BCN Coach" class="w-[200px] h-[auto] object-contain" />
+        </a>
+
+        <!-- Nav links -->
+        <nav class="hidden md:flex items-center gap-1 rounded-full bg-slate-100 p-1 text-sm">
+          <a href="landing.html"  class="px-4 py-1.5 rounded-full text-slate-600 hover:bg-white hover:text-slate-900 transition-colors">Trang chủ</a>
+          <a href="courses.html"  class="px-4 py-1.5 rounded-full text-slate-600 hover:bg-white hover:text-slate-900 transition-colors">Khóa học</a>
+          <a href="contact.html"  class="px-4 py-1.5 rounded-full text-slate-900 font-medium bg-white shadow-sm">Liên hệ</a>
+        </nav>
+
+        <!-- Auth actions -->
+        <div class="flex items-center gap-2" id="mkd-auth-actions">
+          <button type="button" data-mkd-nav-dashboard
+            class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Dashboard
+          </button>
+          <button type="button" data-mkd-cta="navbar"
+            class="inline-flex items-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft">
+            Đăng nhập
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+
+    <!-- ───────────────── HERO ───────────────── -->
+    <section class="bg-white border-b border-slate-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-medium text-blue-800 mb-4">
+            <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+            Chúng tôi luôn sẵn sàng lắng nghe bạn
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 mb-3">
+            Liên hệ &amp; <span class="text-primary">Địa điểm</span>
+          </h1>
+          <p class="text-sm sm:text-base text-slate-500 max-w-xl">
+            Ghé thăm trung tâm, gọi điện trực tiếp, hoặc để lại thông tin bên dưới –
+            đội ngũ BCN Coach sẽ phản hồi trong vòng 24 giờ làm việc.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────── MAP + INFO ───────────────── -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.6fr),minmax(0,1fr)]">
+
+        <!-- Map -->
+        <div class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm" style="min-height:420px;">
+          <div id="mkd-map" class="w-full h-full" style="min-height:420px;"></div>
+        </div>
+
+        <!-- Info cards -->
+        <div class="flex flex-col gap-4">
+
+          <!-- Address -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-5">
+            <div class="flex items-start gap-3">
+              <div class="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 text-lg">
+                📍
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Địa chỉ</p>
+                <p class="text-sm font-medium text-slate-900">123 Nguyễn Huệ, Phường Bến Nghé</p>
+                <p class="text-sm text-slate-500">Quận 1, TP. Hồ Chí Minh</p>
+                <a href="https://maps.google.com/?q=10.7769,106.7009" target="_blank" rel="noopener"
+                  class="inline-flex items-center gap-1 mt-2 text-[11px] font-medium text-primary hover:text-primary-soft">
+                  Xem trên Google Maps
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hours -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-5">
+            <div class="flex items-start gap-3">
+              <div class="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 text-lg">
+                🕐
+              </div>
+              <div class="w-full">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Giờ làm việc</p>
+                <div class="space-y-1 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">Thứ 2 – Thứ 6</span>
+                    <span class="font-medium text-slate-900">08:00 – 21:00</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">Thứ 7</span>
+                    <span class="font-medium text-slate-900">08:00 – 18:00</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">Chủ nhật</span>
+                    <span class="font-medium text-rose-500">Nghỉ</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone + Email -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-5 space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 text-lg">
+                📞
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Hotline</p>
+                <a href="tel:+84901234567" class="text-sm font-medium text-slate-900 hover:text-primary">
+                  0901 234 567
+                </a>
+              </div>
+            </div>
+            <div class="border-t border-slate-100"></div>
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 text-lg">
+                ✉️
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Email</p>
+                <a href="mailto:hello@mikademy.vn" class="text-sm font-medium text-slate-900 hover:text-primary">
+                  hello@mikademy.vn
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Social -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-4">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Mạng xã hội</p>
+            <div class="flex items-center gap-3">
+              <a href="#" aria-label="Facebook"
+                class="h-9 w-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                </svg>
+              </a>
+              <a href="#" aria-label="YouTube"
+                class="h-9 w-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:border-rose-300 hover:text-rose-600 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58 2.78 2.78 0 001.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z"/>
+                  <polygon fill="white" points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
+                </svg>
+              </a>
+              <a href="#" aria-label="TikTok"
+                class="h-9 w-9 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:border-slate-400 hover:text-slate-900 transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.52V6.77a4.85 4.85 0 01-1.02-.08z"/>
+                </svg>
+              </a>
+              <a href="#" aria-label="Zalo"
+                class="inline-flex items-center h-9 px-3 rounded-xl border border-slate-200 text-[11px] font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                Zalo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────── CONTACT FORM ───────────────── -->
+    <section class="bg-white border-y border-slate-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr),minmax(0,1.6fr)]">
+
+          <!-- Left – copy -->
+          <div class="space-y-4">
+            <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-800">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+              Phản hồi trong 24 giờ làm việc
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-semibold text-slate-900">
+              Gửi yêu cầu<br/>tư vấn cho chúng tôi
+            </h2>
+            <p class="text-sm text-slate-500 max-w-sm">
+              Điền thông tin bên cạnh, đội ngũ tư vấn của BCN Coach sẽ chủ động liên hệ lại với bạn qua email hoặc điện thoại.
+            </p>
+            <ul class="space-y-2 text-sm text-slate-600">
+              <li class="flex items-center gap-2">
+                <span class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px]">✓</span>
+                Tư vấn miễn phí, không ràng buộc
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px]">✓</span>
+                Phân tích lộ trình phù hợp với bạn
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="h-5 w-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px]">✓</span>
+                Linh hoạt hình thức: online hoặc tại trung tâm
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right – form -->
+          <form id="mkd-contact-form" novalidate class="bg-slate-50 rounded-2xl border border-slate-200 p-6 sm:p-8 space-y-5">
+
+            <div class="grid gap-5 sm:grid-cols-2">
+              <!-- Name -->
+              <div class="space-y-1.5">
+                <label for="cf-name" class="block text-xs font-medium text-slate-700">
+                  Họ và tên <span class="text-rose-500">*</span>
+                </label>
+                <input id="cf-name" name="name" type="text" autocomplete="name" placeholder="Nguyễn Văn A"
+                  class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" />
+                <p class="hidden text-[11px] text-rose-500" data-err="name">Vui lòng nhập họ tên.</p>
+              </div>
+
+              <!-- Phone -->
+              <div class="space-y-1.5">
+                <label for="cf-phone" class="block text-xs font-medium text-slate-700">
+                  Số điện thoại <span class="text-rose-500">*</span>
+                </label>
+                <input id="cf-phone" name="phone" type="tel" autocomplete="tel" placeholder="0901 234 567"
+                  class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" />
+                <p class="hidden text-[11px] text-rose-500" data-err="phone">Vui lòng nhập số điện thoại hợp lệ.</p>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="space-y-1.5">
+              <label for="cf-email" class="block text-xs font-medium text-slate-700">
+                Email <span class="text-rose-500">*</span>
+              </label>
+              <input id="cf-email" name="email" type="email" autocomplete="email" placeholder="example@email.com"
+                class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" />
+              <p class="hidden text-[11px] text-rose-500" data-err="email">Vui lòng nhập địa chỉ email hợp lệ.</p>
+            </div>
+
+            <!-- Topic -->
+            <div class="space-y-1.5">
+              <label for="cf-topic" class="block text-xs font-medium text-slate-700">
+                Bạn quan tâm đến
+              </label>
+              <select id="cf-topic" name="topic"
+                class="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition appearance-none">
+                <option value="">-- Chọn chủ đề --</option>
+                <option value="consult">Tư vấn khóa học</option>
+                <option value="schedule">Xếp lịch học thử</option>
+                <option value="corporate">Hợp tác doanh nghiệp</option>
+                <option value="mentor">Trở thành mentor</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+
+            <!-- Message -->
+            <div class="space-y-1.5">
+              <label for="cf-message" class="block text-xs font-medium text-slate-700">
+                Nội dung <span class="text-rose-500">*</span>
+              </label>
+              <textarea id="cf-message" name="message" rows="4" placeholder="Mô tả ngắn về câu hỏi hoặc nhu cầu của bạn…"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"></textarea>
+              <p class="hidden text-[11px] text-rose-500" data-err="message">Vui lòng nhập nội dung tin nhắn.</p>
+            </div>
+
+            <button type="submit" id="mkd-submit-btn"
+              class="w-full h-11 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary-soft transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span id="mkd-submit-label">Gửi yêu cầu tư vấn</span>
+              <svg id="mkd-submit-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────── QUICK CONTACT STRIP ───────────────── -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div class="grid gap-4 sm:grid-cols-3">
+
+        <a href="tel:+84901234567"
+          class="group flex items-center gap-4 rounded-2xl bg-white border border-slate-200 shadow-sm px-5 py-5 hover:border-primary/40 hover:shadow-md transition-all">
+          <div class="h-11 w-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-blue-100 transition-colors">
+            📞
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-0.5">Gọi trực tiếp</p>
+            <p class="text-sm font-semibold text-slate-900">0901 234 567</p>
+          </div>
+        </a>
+
+        <a href="mailto:hello@mikademy.vn"
+          class="group flex items-center gap-4 rounded-2xl bg-white border border-slate-200 shadow-sm px-5 py-5 hover:border-primary/40 hover:shadow-md transition-all">
+          <div class="h-11 w-11 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-violet-100 transition-colors">
+            ✉️
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-0.5">Email</p>
+            <p class="text-sm font-semibold text-slate-900">hello@bcn.vn</p>
+          </div>
+        </a>
+
+        <a href="#" target="_blank" rel="noopener"
+          class="group flex items-center gap-4 rounded-2xl bg-white border border-slate-200 shadow-sm px-5 py-5 hover:border-blue-300 hover:shadow-md transition-all">
+          <div class="h-11 w-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shrink-0 group-hover:bg-blue-100 transition-colors">
+            💬
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 mb-0.5">Fanpage Facebook</p>
+            <p class="text-sm font-semibold text-slate-900">BCN Coach</p>
+          </div>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ───────────────── FOOTER ───────────────── -->
+  <footer class="border-t border-slate-200 bg-slate-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500">
+      <p>© <span id="mkd-year"></span> BCN Coach. Tất cả quyền được bảo lưu.</p>
+      <p>Hotline: <span class="font-medium text-slate-800">0901 234 567</span></p>
+    </div>
+  </footer>
+
+  <!-- ───────────────── TOAST ───────────────── -->
+  <div id="mkd-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none hidden">
+    <div class="mkd-toast flex items-center gap-3 rounded-2xl shadow-xl px-5 py-3.5 text-sm font-medium min-w-[260px] max-w-sm"
+      id="mkd-toast-inner">
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script type="module">
+    // ─── Year ───────────────────────────────────────────────
+    const yearEl = document.getElementById("mkd-year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // ─── Leaflet Map ────────────────────────────────────────
+    // Placeholder: Phố đi bộ Nguyễn Huệ, Q.1, TP.HCM
+    const LAT = 10.7769;
+    const LNG = 106.7009;
+
+    const map = L.map("mkd-map", { zoomControl: true, scrollWheelZoom: false }).setView([LAT, LNG], 16);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Custom marker icon
+    const markerIcon = L.divIcon({
+      className: "",
+      html: `
+        <div style="
+          background: #2563eb;
+          border: 3px solid white;
+          border-radius: 50% 50% 50% 0;
+          width: 32px; height: 32px;
+          transform: rotate(-45deg);
+          box-shadow: 0 4px 12px rgba(37,99,235,0.5);
+          display: flex; align-items: center; justify-content: center;
+        ">
+          <div style="
+            transform: rotate(45deg);
+            color: white;
+            font-size: 14px;
+            line-height: 1;
+          ">M</div>
+        </div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -36]
+    });
+
+    const marker = L.marker([LAT, LNG], { icon: markerIcon }).addTo(map);
+
+    marker.bindPopup(`
+      <div style="padding:12px 14px; min-width:180px;">
+        <p style="font-weight:600; font-size:13px; margin:0 0 4px; color:#0f172a;">BCN Coach</p>
+        <p style="font-size:12px; color:#64748b; margin:0;">123 Nguyễn Huệ, Q.1<br/>TP. Hồ Chí Minh</p>
+        <a href="https://maps.google.com/?q=${LAT},${LNG}" target="_blank"
+          style="display:inline-block;margin-top:8px;font-size:11px;color:#2563eb;font-weight:500;text-decoration:none;">
+          Chỉ đường →
+        </a>
+      </div>
+    `, { className: "mkd-popup" }).openPopup();
+
+    // ─── Toast helper ────────────────────────────────────────
+    let toastTimer;
+    function showToast(message, type = "success") {
+      const wrap  = document.getElementById("mkd-toast");
+      const inner = document.getElementById("mkd-toast-inner");
+      if (!wrap || !inner) return;
+
+      const styles = {
+        success: "bg-emerald-600 text-white",
+        error:   "bg-rose-600 text-white",
+        info:    "bg-slate-800 text-white"
+      };
+
+      const icons = { success: "✓", error: "✕", info: "ℹ" };
+
+      inner.className = `mkd-toast flex items-center gap-3 rounded-2xl shadow-xl px-5 py-3.5 text-sm font-medium min-w-[260px] max-w-sm ${styles[type]}`;
+      inner.innerHTML = `
+        <span style="font-size:16px;">${icons[type]}</span>
+        <span>${message}</span>
+      `;
+
+      wrap.classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => wrap.classList.add("hidden"), 4000);
+    }
+
+    // ─── Contact form validation & submit ────────────────────
+    const form        = document.getElementById("mkd-contact-form");
+    const submitBtn   = document.getElementById("mkd-submit-btn");
+    const submitLabel = document.getElementById("mkd-submit-label");
+    const spinner     = document.getElementById("mkd-submit-spinner");
+
+    function showErr(field, show) {
+      const el = form.querySelector(`[data-err="${field}"]`);
+      if (!el) return;
+      el.classList.toggle("hidden", !show);
+    }
+
+    function clearErrors() {
+      form.querySelectorAll("[data-err]").forEach(el => el.classList.add("hidden"));
+    }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      submitLabel.textContent = loading ? "Đang gửi…" : "Gửi yêu cầu tư vấn";
+      spinner.classList.toggle("hidden", !loading);
+    }
+
+    function validate() {
+      let valid = true;
+      clearErrors();
+
+      const name    = form.querySelector("#cf-name").value.trim();
+      const phone   = form.querySelector("#cf-phone").value.trim();
+      const email   = form.querySelector("#cf-email").value.trim();
+      const message = form.querySelector("#cf-message").value.trim();
+
+      if (!name)                                  { showErr("name", true);    valid = false; }
+      if (!/^[0-9+\s\-]{9,15}$/.test(phone))     { showErr("phone", true);   valid = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr("email", true); valid = false; }
+      if (!message)                               { showErr("message", true); valid = false; }
+
+      return valid;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+
+      setLoading(true);
+      // Simulate async send (replace with real API call)
+      await new Promise(r => setTimeout(r, 1200));
+      setLoading(false);
+      form.reset();
+      showToast("Gửi thành công! Chúng tôi sẽ liên hệ lại trong 24 giờ.", "success");
+    });
+
+    // ─── Firebase Auth (navbar) ──────────────────────────────
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut }
+      from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let isLoggedIn = false;
+
+    function gotoApp() {
+      window.location.href = isLoggedIn ? "dashboard.html" : "auth.html";
+    }
+
+    function attachNavHandlers() {
+      document.querySelectorAll("[data-mkd-nav-dashboard]").forEach(el =>
+        el.addEventListener("click", e => { e.preventDefault(); gotoApp(); })
+      );
+      document.querySelectorAll("[data-mkd-cta]").forEach(el =>
+        el.addEventListener("click", e => { e.preventDefault(); gotoApp(); })
+      );
+    }
+
+    function renderNav(user) {
+      const container = document.getElementById("mkd-auth-actions");
+      if (!container) return;
+
+      if (!user) {
+        container.innerHTML = `
+          <button type="button" data-mkd-nav-dashboard
+            class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50">
+            Dashboard
+          </button>
+          <button type="button" data-mkd-cta="navbar"
+            class="inline-flex items-center h-9 px-4 rounded-full bg-primary text-white text-xs font-medium hover:bg-primary-soft">
+            Đăng nhập
+          </button>`;
+        attachNavHandlers();
+        return;
+      }
+
+      const displayName = user.displayName || "Học viên";
+      const email       = user.email || "";
+      const initial     = (displayName || email || "?")[0]?.toUpperCase() || "S";
+
+      container.innerHTML = `
+        <div class="hidden sm:flex flex-col items-end mr-1">
+          <span class="text-xs font-medium text-slate-900">${displayName}</span>
+          <span class="text-[11px] text-slate-500">${email}</span>
+        </div>
+        <a href="profile.html" class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold hover:opacity-90">
+          ${initial}
+        </a>
+        <button type="button" data-mkd-nav-dashboard
+          class="hidden sm:inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50">
+          Dashboard
+        </button>
+        <button type="button" id="mkd-logout"
+          class="inline-flex items-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50">
+          Đăng xuất
+        </button>`;
+
+      attachNavHandlers();
+
+      const logoutBtn = document.getElementById("mkd-logout");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+          try { await signOut(auth); window.location.href = "auth.html"; }
+          catch (err) { console.error(err); }
+        });
+      }
+    }
+
+    onAuthStateChanged(auth, user => {
+      isLoggedIn = !!user;
+      renderNav(user || null);
+    });
+
+    document.addEventListener("DOMContentLoaded", attachNavHandlers);
+  </script>
+</body>
+</html>
