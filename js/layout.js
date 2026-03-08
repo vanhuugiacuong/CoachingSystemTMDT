@@ -90,15 +90,15 @@ export function renderSiteFooter() {
               Nền tảng coaching 1-1 chuyên nghiệp hàng đầu Việt Nam. Giúp bạn học tập hiệu quả hơn với sự hướng dẫn tận tình từ các chuyên gia.
             </p>
             <div class="flex gap-3 mt-4">
-              <button class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100">
-                IG
-              </button>
-              <button class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100">
-                in
-              </button>
-              <button class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100">
-                fb
-              </button>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:border-slate-300 transition-colors" aria-label="Instagram">
+                <img src="https://cdn.simpleicons.org/instagram/64748b" alt="" class="w-4 h-4 object-contain" width="16" height="16" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:border-slate-300 transition-colors" aria-label="LinkedIn">
+                <img src="https://api.iconify.design/simple-icons/linkedin.svg?width=16&height=16&color=%2364748b" alt="" class="w-4 h-4 object-contain" width="16" height="16" />
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="h-9 w-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-100 hover:border-slate-300 transition-colors" aria-label="Facebook">
+                <img src="https://cdn.simpleicons.org/facebook/64748b" alt="" class="w-4 h-4 object-contain" width="16" height="16" />
+              </a>
             </div>
           </div>
 
