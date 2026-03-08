@@ -25,7 +25,7 @@ export function renderStudentNavbar(active) {
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
             <a href="landing.html" class="flex items-center gap-2">
-              <img src="asset/logo.png" alt="Mikademy Coach" class="w-[200px] h-[auto] object-contain" />
+              <img src="asset/logo.png" alt="BCN Coach" class="w-[200px] h-[auto] object-contain" />
             </a>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function renderStudentNavbar(active) {
   `;
 }
 
-// Shared footer for Mikademy pages
+// Shared footer for BCN Coach pages
 export function renderSiteFooter() {
   const container = document.getElementById("mkd-footer");
   if (!container) return;
@@ -84,7 +84,7 @@ export function renderSiteFooter() {
         <div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div class="max-w-sm">
             <div class="flex items-center gap-2">
-              <img src="asset/logo.png" alt="Mikademy Coach" class="w-[100px] h-[auto] object-contain" />
+              <img src="asset/logo.png" alt="BCN Coach" class="w-[100px] h-[auto] object-contain" />
             </div>
             <p class="text-sm text-slate-500">
               Nền tảng coaching 1-1 chuyên nghiệp hàng đầu Việt Nam. Giúp bạn học tập hiệu quả hơn với sự hướng dẫn tận tình từ các chuyên gia.
@@ -121,7 +121,7 @@ export function renderSiteFooter() {
       </div>
       <div class="border-t border-slate-200 bg-slate-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4 text-xs text-slate-500">
-          <span>© 2025 Mikademy Coach. Tất cả quyền được bảo lưu.</span>
+          <span>© 2025 BCN Coach. Tất cả quyền được bảo lưu.</span>
           <button class="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-slate-200 text-xs text-slate-600 hover:bg-slate-100">
             <span>Tiếng Việt</span>
           </button>
