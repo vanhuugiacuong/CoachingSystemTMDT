@@ -208,11 +208,14 @@
     const qrGrid = document.querySelector(".grid.grid-cols-12.gap-1");
     renderPseudoQr(qrGrid);
 
+    const record = courseId ? loadRegisteredCourses().find((r) => r.courseId === courseId) : null;
+    const amount = record?.price ?? course?.price ?? 0;
+
     if (!courseId || !course) {
       setError("Không tìm thấy khóa học để thanh toán. Vui lòng quay lại Dashboard và thử lại.");
     } else {
       if (titleEl) titleEl.textContent = course.title;
-      if (amountEl) amountEl.textContent = formatPriceVND(course.price);
+      if (amountEl) amountEl.textContent = formatPriceVND(amount);
       if (contentEl) contentEl.textContent = `MKD-${courseId}`.toUpperCase();
     }
 
@@ -238,7 +241,7 @@
         const invoice = createInvoice({
           courseId,
           method: "bank",
-          amount: course.price
+          amount: list[index]?.price ?? course.price
         });
 
         window.location.href = `profile.html?section=invoices&invoiceId=${encodeURIComponent(invoice.id)}`;

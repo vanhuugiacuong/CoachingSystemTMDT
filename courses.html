@@ -38,6 +38,14 @@
           class="w-full h-11 pl-11 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         />
       </div>
+
+      <div class="mt-6 rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-slate-700">
+        <p class="font-semibold text-slate-900 mb-2">Chương trình ưu đãi</p>
+        <ul class="space-y-1 text-slate-600">
+          <li><strong>Khóa học đầu tiên:</strong> Giảm 10% khi bạn chưa đăng ký khóa nào.</li>
+          <li><strong>Combo Full Stack:</strong> Giảm 15% cho mỗi khóa thuộc lộ trình Full Stack (Git, Next.js, NestJS, Cơ sở dữ liệu) khi bạn đã có ít nhất 1 khóa Full Stack.</li>
+        </ul>
+      </div>
     </header>
 
     <section id="courses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -49,6 +57,18 @@
 
   <script type="module">
     import { courses, formatPriceVND } from "./js/courses-data.js";
+    import { calculateFinalPrice } from "./js/promotions.js";
+
+    function loadRegisteredCourseIds() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.map((r) => r.courseId) : [];
+      } catch (e) {
+        return [];
+      }
+    }
 
     function getCourseIconClasses(courseId) {
       let bg, text, hex;
@@ -100,13 +120,17 @@
 
     const studentsIconUrl = "https://api.iconify.design/lucide/users.svg?width=18&height=18&color=%2364748b";
 
-    function renderCourseCard(course) {
+    function renderCourseCard(course, registeredIds) {
       const detailHref = `course-detail.html?id=${encodeURIComponent(course.id)}`;
       const iconClasses = getCourseIconClasses(course.id);
       const iconSrc = getCourseIconSrc(course, iconClasses);
       const iconContent = iconSrc
         ? `<img src="${iconSrc}" alt="" class="w-7 h-7 object-contain" width="28" height="28" />`
         : `<span class="font-bold text-sm">${course.icon}</span>`;
+      const { finalPrice, applied } = calculateFinalPrice(course.id, course.price, registeredIds || []);
+      const priceHtml = applied
+        ? `<p class="text-xs text-slate-500 mb-0.5"><span class="line-through">${formatPriceVND(course.price)}</span> · ${applied.label}</p><p class="text-xl font-bold text-slate-900 mb-4">${formatPriceVND(finalPrice)}</p>`
+        : `<p class="text-xl font-bold text-slate-900 mb-4">${formatPriceVND(finalPrice)}</p>`;
       return `
         <article class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow flex flex-col">
           <div class="p-5 flex flex-col flex-1">
@@ -124,7 +148,7 @@
               <img src="${studentsIconUrl}" alt="" class="w-[18px] h-[18px] object-contain opacity-80" width="18" height="18" />
               <span>0 học viên</span>
             </div>
-            <p class="text-xl font-bold text-slate-900 mb-4">${formatPriceVND(course.price)}</p>
+            ${priceHtml}
             <a href="${detailHref}" class="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft transition-colors">
               Xem chi tiết
             </a>
@@ -136,7 +160,8 @@
     function renderCourses(list) {
       const grid = document.getElementById("courses-grid");
       if (!grid) return;
-      grid.innerHTML = list.map(renderCourseCard).join("");
+      const registeredIds = loadRegisteredCourseIds();
+      grid.innerHTML = list.map((c) => renderCourseCard(c, registeredIds)).join("");
     }
 
     function filterCourses(query) {

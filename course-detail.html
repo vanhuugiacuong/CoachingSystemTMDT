@@ -91,6 +91,10 @@
               <dt class="text-slate-500">Học phí:</dt>
               <dd id="meta-price" class="font-semibold text-primary">0 ₫</dd>
             </div>
+            <div id="meta-promotion-row" class="hidden flex items-center justify-between gap-4">
+              <dt class="text-slate-500">Ưu đãi:</dt>
+              <dd id="meta-promotion-label" class="text-emerald-600 text-xs font-medium">-</dd>
+            </div>
             <div class="flex items-center justify-between gap-4">
               <dt class="text-slate-500">Trạng thái:</dt>
               <dd>
@@ -204,8 +208,15 @@
           <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
             Thông tin thanh toán
           </h3>
+          <div id="mkd-modal-original-price-row" class="hidden flex items-center justify-between text-sm text-slate-500 mb-1">
+            <span>Giá gốc:</span>
+            <span id="mkd-modal-original-price" class="line-through">0 ₫</span>
+          </div>
+          <div id="mkd-modal-promotion-row" class="hidden text-xs text-emerald-600 font-medium mb-1">
+            <span id="mkd-modal-promotion-label"></span>
+          </div>
           <div class="flex items-center justify-between text-sm">
-            <span class="text-slate-600">Giá khóa học:</span>
+            <span class="text-slate-600">Thanh toán:</span>
             <span id="mkd-modal-course-price" class="font-semibold text-slate-900">
               0 ₫
             </span>
@@ -235,6 +246,7 @@
   <script type="module">
     import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
     import { getCourseById, formatPriceVND } from "./js/courses-data.js";
+    import { calculateFinalPrice } from "./js/promotions.js";
 
     renderStudentNavbar("courses");
     renderSiteFooter();
@@ -299,6 +311,10 @@
     const confirmModalBtn = document.getElementById("mkd-register-confirm");
     const modalCourseTitle = document.getElementById("mkd-modal-course-title");
     const modalCoursePrice = document.getElementById("mkd-modal-course-price");
+    const modalOriginalPriceRow = document.getElementById("mkd-modal-original-price-row");
+    const modalOriginalPrice = document.getElementById("mkd-modal-original-price");
+    const modalPromotionRow = document.getElementById("mkd-modal-promotion-row");
+    const modalPromotionLabel = document.getElementById("mkd-modal-promotion-label");
 
     function loadRegisteredCourses() {
       try {
@@ -321,8 +337,22 @@
 
     function openModal() {
       if (!modal || !course) return;
+      const registered = loadRegisteredCourses().map((r) => r.courseId);
+      const { finalPrice, applied } = calculateFinalPrice(course.id, course.price, registered);
       if (modalCourseTitle) modalCourseTitle.textContent = course.title;
-      if (modalCoursePrice) modalCoursePrice.textContent = formatPriceVND(course.price);
+      if (modalCoursePrice) modalCoursePrice.textContent = formatPriceVND(finalPrice);
+      if (applied) {
+        if (modalOriginalPriceRow) {
+          modalOriginalPriceRow.classList.remove("hidden");
+          modalOriginalPriceRow.classList.add("flex");
+        }
+        if (modalOriginalPrice) modalOriginalPrice.textContent = formatPriceVND(course.price);
+        if (modalPromotionRow) modalPromotionRow.classList.remove("hidden");
+        if (modalPromotionLabel) modalPromotionLabel.textContent = `${applied.label} (-${applied.percent}%)`;
+      } else {
+        if (modalOriginalPriceRow) modalOriginalPriceRow.classList.add("hidden");
+        if (modalPromotionRow) modalPromotionRow.classList.add("hidden");
+      }
       modal.classList.remove("hidden");
       modal.classList.add("flex");
     }
@@ -343,10 +373,12 @@
         }
       });
 
+      const registered = loadRegisteredCourses().map((r) => r.courseId);
+      const { finalPrice } = calculateFinalPrice(course.id, course.price, registered);
       saveRegisteredCourse({
         courseId: course.id,
         registrationType: selectedType,
-        price: course.price,
+        price: finalPrice,
         title: course.title,
         sessions: course.sessions,
         createdAt: new Date().toISOString()
@@ -411,7 +443,17 @@
       if (addressEl) addressEl.textContent = course.meta?.offlineAddress || "-";
       if (instructorsEl) instructorsEl.textContent = String(course.meta?.instructors ?? 0);
       if (studentsEl) studentsEl.textContent = String(course.meta?.students ?? 0);
-      if (priceEl) priceEl.textContent = formatPriceVND(course.price);
+      (function () {
+        const registered = loadRegisteredCourses().map((r) => r.courseId);
+        const { finalPrice, applied } = calculateFinalPrice(course.id, course.price, registered);
+        if (priceEl) priceEl.textContent = formatPriceVND(finalPrice);
+        const promoRow = document.getElementById("meta-promotion-row");
+        const promoLabel = document.getElementById("meta-promotion-label");
+        if (applied && promoRow && promoLabel) {
+          promoRow.classList.remove("hidden");
+          promoLabel.textContent = `${applied.label} (-${applied.percent}%)`;
+        }
+      })();
       if (statusEl) statusEl.textContent = course.meta?.status || "-";
 
       if (openModalBtn) {
