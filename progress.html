@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tiến độ học tập - BCN Coach</title>
 
-  <script src="js/env-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -697,8 +696,7 @@
         }
 
         try {
-          const apiUrl = (typeof MKD_getApiUrl === "function" ? MKD_getApiUrl("/api/send-email") : "/api/send-email");
-          const response = await fetch(apiUrl, {
+          const response = await fetch("/api/send-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

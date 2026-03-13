@@ -14,13 +14,9 @@ const WIDGET_ID = "mkd-chatbox-widget";
 const PANEL_ID = "mkd-chatbox-panel";
 const BTN_ID = "mkd-chatbox-toggle";
 
-/** URL API chat. Dùng window.MKD_getApiUrl nếu có (env-config.js), không thì cùng origin /api/chat hoặc MKD_CHAT_API_BASE_URL. */
-function getChatApiUrl() {
-  if (typeof window !== "undefined" && window.MKD_getApiUrl) return window.MKD_getApiUrl("/api/chat");
-  const base = window.MKD_CHAT_API_BASE_URL ?? "";
-  return base ? `${base.replace(/\/$/, "")}/api/chat` : "/api/chat";
-}
-const CHAT_API_URL = getChatApiUrl();
+/** Base URL của backend (ví dụ http://localhost:3000). Để trống = cùng origin. Có thể set window.MKD_CHAT_API_BASE_URL trước khi load. */
+const CHAT_API_BASE = typeof window !== "undefined" ? (window.MKD_CHAT_API_BASE_URL ?? "") : "";
+const CHAT_API_URL = CHAT_API_BASE ? `${CHAT_API_BASE.replace(/\/$/, "")}/api/chat` : "/api/chat";
 
 function normalizeText(s) {
   return (s || "")
