@@ -782,8 +782,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       attachHandlers();
 
-      // Popup ưu đãi: chỉ hiện lần đầu mỗi phiên (session)
-      const PROMO_SEEN_KEY = "mkd-landing-promo-seen";
+      // Popup ưu đãi: hiện mỗi lần vào landing hoặc F5
       const promoModal = document.getElementById("mkd-promo-modal");
       const showPromo = () => {
         if (!promoModal) return;
@@ -791,24 +790,24 @@
         promoModal.classList.add("flex");
       };
       const hidePromo = () => {
-        try {
-          sessionStorage.setItem(PROMO_SEEN_KEY, "1");
-        } catch (e) {}
         if (promoModal) {
           promoModal.classList.add("hidden");
           promoModal.classList.remove("flex");
         }
       };
 
-      if (!sessionStorage.getItem(PROMO_SEEN_KEY)) {
-        setTimeout(showPromo, 600);
-      }
+      setTimeout(showPromo, 600);
 
       document.getElementById("mkd-promo-modal-close")?.addEventListener("click", hidePromo);
       document.getElementById("mkd-promo-modal-dismiss")?.addEventListener("click", hidePromo);
       document.getElementById("mkd-promo-cta")?.addEventListener("click", hidePromo);
       promoModal?.addEventListener("click", (e) => {
         if (e.target === promoModal) hidePromo();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && promoModal && !promoModal.classList.contains("hidden")) {
+          hidePromo();
+        }
       });
     });
   </script>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài học - BCN Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <nav class="mb-6 text-xs text-slate-500" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-1">
+        <li><a href="dashboard.html" class="hover:text-slate-700">Dashboard</a></li>
+        <li><span class="mx-1">/</span></li>
+        <li><a href="progress-list.html" class="hover:text-slate-700">Tiến độ học tập</a></li>
+        <li><span class="mx-1">/</span></li>
+        <li><a id="mkd-lesson-breadcrumb-course" href="#" class="hover:text-slate-700">Khóa học</a></li>
+        <li><span class="mx-1">/</span></li>
+        <li class="text-slate-700 font-medium" id="mkd-lesson-breadcrumb-session">Bài học</li>
+      </ol>
+    </nav>
+
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)]">
+      <article class="space-y-6">
+        <header class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <p id="mkd-lesson-badge" class="text-xs font-medium text-primary mb-2">Buổi học</p>
+          <h1 id="mkd-lesson-title" class="text-xl sm:text-2xl font-semibold text-slate-900 leading-tight">
+            Đang tải...
+          </h1>
+          <p id="mkd-lesson-course-name" class="text-sm text-slate-500 mt-2"></p>
+        </header>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Mục tiêu bài học</h2>
+          <ul id="mkd-lesson-objectives" class="list-disc list-inside space-y-2 text-sm text-slate-700">
+          </ul>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Nội dung chính</h2>
+          <div id="mkd-lesson-content" class="prose prose-sm max-w-none text-slate-700 space-y-4">
+          </div>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Tóm tắt</h2>
+          <p id="mkd-lesson-summary" class="text-sm text-slate-600 leading-relaxed"></p>
+        </section>
+      </article>
+
+      <aside class="space-y-6">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Thông tin khóa học</h2>
+          <p id="mkd-lesson-sidebar-course" class="text-sm font-medium text-slate-900"></p>
+          <p id="mkd-lesson-sidebar-sessions" class="text-xs text-slate-500 mt-1"></p>
+          <a
+            id="mkd-lesson-back-progress"
+            href="#"
+            class="mt-4 inline-flex items-center justify-center h-10 w-full rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+          >
+            Quay lại tiến độ khóa học
+          </a>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <h2 class="text-sm font-semibold text-slate-900 mb-3">Tài liệu buổi học</h2>
+          <p class="text-xs text-slate-500 mb-3">Slide và bài tập liên quan đến buổi học này.</p>
+          <button
+            type="button"
+            class="w-full inline-flex items-center justify-center h-9 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Tải slide buổi học
+          </button>
+          <button
+            type="button"
+            class="mt-2 w-full inline-flex items-center justify-center h-9 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Xem bài tập
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <div id="mkd-lesson-not-found" class="hidden mt-10 rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+      Không tìm thấy bài học. <a href="progress-list.html" class="text-primary hover:underline">Quay lại danh sách tiến độ</a>.
+    </div>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById } from "./js/courses-data.js";
+
+    renderStudentNavbar("courses");
+    renderSiteFooter();
+
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("courseId");
+    const sessionParam = params.get("session");
+    const sessionIndex = sessionParam ? Math.max(0, parseInt(sessionParam, 10) - 1) : -1;
+
+    const course = courseId ? getCourseById(courseId) : undefined;
+    const syllabusItems = course?.detail?.syllabusItems || [];
+    const lessonItem = sessionIndex >= 0 && sessionIndex < syllabusItems.length
+      ? syllabusItems[sessionIndex]
+      : null;
+
+    const notFoundEl = document.getElementById("mkd-lesson-not-found");
+    const titleEl = document.getElementById("mkd-lesson-title");
+    const badgeEl = document.getElementById("mkd-lesson-badge");
+    const courseNameEl = document.getElementById("mkd-lesson-course-name");
+    const breadcrumbCourseEl = document.getElementById("mkd-lesson-breadcrumb-course");
+    const breadcrumbSessionEl = document.getElementById("mkd-lesson-breadcrumb-session");
+    const objectivesEl = document.getElementById("mkd-lesson-objectives");
+    const contentEl = document.getElementById("mkd-lesson-content");
+    const summaryEl = document.getElementById("mkd-lesson-summary");
+    const sidebarCourseEl = document.getElementById("mkd-lesson-sidebar-course");
+    const sidebarSessionsEl = document.getElementById("mkd-lesson-sidebar-sessions");
+    const backProgressEl = document.getElementById("mkd-lesson-back-progress");
+
+    function generateLessonContent(itemText) {
+      const match = itemText.match(/^Buổi\s+[\d\s\-]+:\s*(.+)$/);
+      const topics = match ? match[1].trim() : itemText;
+      const parts = topics.split(/[,&]/).map((s) => s.trim()).filter(Boolean);
+
+      const objectives = [
+        `Nắm được các khái niệm và nội dung: ${topics}.`,
+        "Áp dụng kiến thức vào bài tập thực hành trong buổi học.",
+        "Chuẩn bị cho các buổi học tiếp theo trong khóa."
+      ];
+
+      const contentParagraphs = [
+        `Trong buổi học này, bạn sẽ được hướng dẫn chi tiết về <strong>${parts[0] || "nội dung chính"}</strong>. Đây là phần quan trọng trong lộ trình khóa học, giúp bạn xây dựng nền tảng vững chắc.`,
+        parts.length > 1
+          ? `Tiếp theo, chúng ta sẽ đi sâu vào <strong>${parts.slice(1).join(", ")}</strong>. Mentor sẽ minh họa bằng ví dụ thực tế và bài tập ngay trên máy để bạn theo dõi và thực hành theo.`
+          : "Mentor sẽ minh họa bằng ví dụ thực tế và bài tập ngay trên máy để bạn theo dõi và thực hành theo.",
+        "Cuối buổi, bạn sẽ có thời gian đặt câu hỏi và thảo luận. Hãy chuẩn bị sẵn môi trường dev (IDE, công cụ đã cài đặt) để tận dụng tối đa thời gian học 1-1."
+      ];
+
+      const summary = `Buổi học tập trung vào: ${topics}. Sau khi kết thúc, hãy ôn lại ghi chú và hoàn thành bài tập được giao (nếu có) trước buổi tiếp theo.`;
+
+      return { objectives, contentParagraphs, summary };
+    }
+
+    if (!lessonItem || !course) {
+      if (notFoundEl) notFoundEl.classList.remove("hidden");
+      document.querySelector(".grid.gap-6")?.classList.add("hidden");
+      if (titleEl) titleEl.textContent = "Không tìm thấy bài học";
+    } else {
+      document.title = `${lessonItem} - ${course.title} - BCN Coach`;
+
+      const progressHref = `progress.html?id=${encodeURIComponent(courseId)}`;
+      if (breadcrumbCourseEl) {
+        breadcrumbCourseEl.textContent = course.title;
+        breadcrumbCourseEl.href = progressHref;
+      }
+      if (breadcrumbSessionEl) breadcrumbSessionEl.textContent = lessonItem;
+      if (titleEl) titleEl.textContent = lessonItem;
+      if (badgeEl) badgeEl.textContent = `Buổi ${sessionIndex + 1} · ${course.sessions || 0} buổi`;
+      if (courseNameEl) courseNameEl.textContent = course.title;
+      if (sidebarCourseEl) sidebarCourseEl.textContent = course.title;
+      if (sidebarSessionsEl) sidebarSessionsEl.textContent = `${course.sessions || 0} buổi`;
+      if (backProgressEl) backProgressEl.href = progressHref;
+
+      const { objectives, contentParagraphs, summary } = generateLessonContent(lessonItem);
+
+      if (objectivesEl) {
+        objectivesEl.innerHTML = objectives.map((o) => `<li>${o}</li>`).join("");
+      }
+      if (contentEl) {
+        contentEl.innerHTML = contentParagraphs.map((p) => `<p>${p}</p>`).join("");
+      }
+      if (summaryEl) summaryEl.textContent = summary;
+    }
+  </script>
+</body>
+</html>

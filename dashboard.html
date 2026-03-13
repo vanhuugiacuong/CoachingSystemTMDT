@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Học viên - BCN Coach</title>
 
+  <script src="js/env-config.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -276,8 +277,11 @@
   <script type="module">
     import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
     import { getCourseById, formatPriceVND } from "./js/courses-data.js";
+    import { renderChatboxWidget } from "./js/chatbox-widget.js";
+
     renderStudentNavbar("dashboard");
     renderSiteFooter();
+    renderChatboxWidget();
 
     // Firebase guard: chặn truy cập nếu chưa đăng nhập
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
