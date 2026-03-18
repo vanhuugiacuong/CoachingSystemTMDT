@@ -15,6 +15,7 @@ export function renderStudentNavbar(active) {
     { id: "dashboard", label: "Dashboard", href: "dashboard.html" },
     { id: "timetable", label: "Thời khóa biểu", href: "timetable.html" },
     { id: "courses", label: "Khóa học", href: "courses.html" },
+    { id: "code-lab", label: "Code Lab", href: "code-lab.html" },
     { id: "groups", label: "Nhóm học tập", href: "groups.html" }
   ];
 

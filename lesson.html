@@ -60,6 +60,32 @@
           <h2 class="text-sm font-semibold text-slate-900 mb-4">Tóm tắt</h2>
           <p id="mkd-lesson-summary" class="text-sm text-slate-600 leading-relaxed"></p>
         </section>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Coaching với Mentor Online</h2>
+              <p class="text-xs text-slate-500 mt-1">Vào phòng call giả lập để trao đổi trực tiếp cùng mentor theo buổi học hiện tại.</p>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium px-2.5 py-1">
+              Online
+            </span>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-xs text-slate-500">Phòng coaching</p>
+            <p id="mkd-lesson-coaching-room" class="text-sm font-medium text-slate-900 mt-1">Đang tải phòng học...</p>
+            <p class="text-xs text-slate-500 mt-1">Mentor sẽ giải đáp, review code và demo trực tiếp trong buổi call.</p>
+          </div>
+
+          <a
+            id="mkd-lesson-open-mentor-call"
+            href="#"
+            class="mt-4 inline-flex items-center justify-center h-10 px-4 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+          >
+            Bắt đầu video call với mentor
+          </a>
+        </section>
       </article>
 
       <aside class="space-y-6">
@@ -91,6 +117,14 @@
           >
             Xem bài tập
           </button>
+
+          <a
+            id="mkd-lesson-open-mentor-call-side"
+            href="#"
+            class="mt-2 w-full inline-flex items-center justify-center h-9 rounded-xl bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-500"
+          >
+            Vào phòng call mentor
+          </a>
         </div>
       </aside>
     </div>
@@ -132,6 +166,9 @@
     const sidebarCourseEl = document.getElementById("mkd-lesson-sidebar-course");
     const sidebarSessionsEl = document.getElementById("mkd-lesson-sidebar-sessions");
     const backProgressEl = document.getElementById("mkd-lesson-back-progress");
+    const coachingRoomEl = document.getElementById("mkd-lesson-coaching-room");
+    const openMentorCallEl = document.getElementById("mkd-lesson-open-mentor-call");
+    const openMentorCallSideEl = document.getElementById("mkd-lesson-open-mentor-call-side");
 
     function generateLessonContent(itemText) {
       const match = itemText.match(/^Buổi\s+[\d\s\-]+:\s*(.+)$/);
@@ -176,6 +213,17 @@
       if (sidebarCourseEl) sidebarCourseEl.textContent = course.title;
       if (sidebarSessionsEl) sidebarSessionsEl.textContent = `${course.sessions || 0} buổi`;
       if (backProgressEl) backProgressEl.href = progressHref;
+
+      const mentorCallHref = `mentor-call.html?courseId=${encodeURIComponent(courseId)}&session=${encodeURIComponent(String(sessionIndex + 1))}`;
+      if (coachingRoomEl) {
+        coachingRoomEl.textContent = `Room ${course.id || "course"}-session-${sessionIndex + 1}`;
+      }
+      if (openMentorCallEl) {
+        openMentorCallEl.href = mentorCallHref;
+      }
+      if (openMentorCallSideEl) {
+        openMentorCallSideEl.href = mentorCallHref;
+      }
 
       const { objectives, contentParagraphs, summary } = generateLessonContent(lessonItem);
 

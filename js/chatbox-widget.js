@@ -14,8 +14,25 @@ const WIDGET_ID = "mkd-chatbox-widget";
 const PANEL_ID = "mkd-chatbox-panel";
 const BTN_ID = "mkd-chatbox-toggle";
 
-/** Base URL của backend (ví dụ http://localhost:3000). Để trống = cùng origin. Có thể set window.MKD_CHAT_API_BASE_URL trước khi load. */
-const CHAT_API_BASE = typeof window !== "undefined" ? (window.MKD_CHAT_API_BASE_URL ?? "") : "";
+/**
+ * Base URL của backend (ví dụ http://localhost:3000).
+ * - Set window.MKD_CHAT_API_BASE_URL trước khi load script để chỉ định tường minh.
+ * - Nếu không set: khi chạy bằng Live Server (port khác 3000) tự dùng http://localhost:3000.
+ * - Khi mở trang qua Node (cùng origin, port 3000) thì dùng cùng origin.
+ */
+function getChatApiBase() {
+  if (typeof window === "undefined") return "";
+  if (window.MKD_CHAT_API_BASE_URL != null && window.MKD_CHAT_API_BASE_URL !== "") {
+    return String(window.MKD_CHAT_API_BASE_URL).trim();
+  }
+  const port = parseInt(window.location.port, 10) || 80;
+  const defaultBackendPort = 3000;
+  if (port !== defaultBackendPort) {
+    return `http://localhost:${defaultBackendPort}`;
+  }
+  return "";
+}
+const CHAT_API_BASE = getChatApiBase();
 const CHAT_API_URL = CHAT_API_BASE ? `${CHAT_API_BASE.replace(/\/$/, "")}/api/chat` : "/api/chat";
 
 function normalizeText(s) {
