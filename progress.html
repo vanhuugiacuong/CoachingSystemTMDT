@@ -637,6 +637,7 @@
       const chats = JSON.parse(localStorage.getItem("mkd-mentor-chats") || "[]");
       chats.push({
         from: "student",
+        userEmail: String(localStorage.getItem("mkd-last-user-email") || ""),
         message: text,
         timestamp: new Date().toISOString()
       });

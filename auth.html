@@ -123,11 +123,23 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
+    // TODO: Dán gmail admin của bạn vào đây (lowercase)
+    const ADMIN_EMAILS = ["vanhuugiacuong@gmail.com", "minhnhut006lob@gmail.com"];
+
     const googleBtn = document.getElementById("google-signin-btn");
     if (googleBtn) {
       googleBtn.addEventListener("click", async () => {
         try {
-          await signInWithPopup(auth, provider);
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          const email = (user?.email || "").toLowerCase();
+          try {
+            window.localStorage.setItem("mkd-last-user-email", email);
+          } catch {}
+          if (ADMIN_EMAILS.includes(email)) {
+            window.location.href = "admin-dashboard.html";
+            return;
+          }
           window.location.href = "dashboard.html";
         } catch (error) {
           console.error("Google sign-in error:", error);

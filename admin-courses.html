@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý khóa học - Admin BCN Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#2563eb",
+              soft: "#60a5fa"
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Quản lý khóa học</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Danh sách khóa học (demo) + thống kê đồng bộ từ đăng ký & hóa đơn trong trình duyệt.
+          </p>
+        </div>
+        <button
+          id="mkd-course-create-btn"
+          type="button"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+        >
+          + Tạo khóa học
+        </button>
+      </div>
+    </header>
+
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tổng khóa học</p>
+        <p id="mkd-course-kpi-total" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Đang mở bán</p>
+        <p id="mkd-course-kpi-published" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tổng đăng ký</p>
+        <p id="mkd-course-kpi-registrations" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Doanh thu (paid)</p>
+        <p id="mkd-course-kpi-revenue" class="mt-2 text-2xl font-semibold text-slate-900">0 ₫</p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex-1 flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-600" for="mkd-course-search">Tìm kiếm</label>
+            <input
+              id="mkd-course-search"
+              type="text"
+              placeholder="Tìm theo tên khóa học hoặc giảng viên..."
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div class="sm:w-56">
+            <label class="text-xs font-medium text-slate-600" for="mkd-course-status-filter">Trạng thái</label>
+            <select
+              id="mkd-course-status-filter"
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Tất cả</option>
+              <option value="published">Đang mở bán</option>
+              <option value="draft">Nháp</option>
+              <option value="hidden">Đã ẩn</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-xs text-slate-500">
+          <span id="mkd-course-count-label">0 / 0 khóa học</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-slate-500 bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th class="text-left font-semibold px-6 py-3">Khóa học</th>
+              <th class="text-left font-semibold px-6 py-3">Giảng viên</th>
+              <th class="text-left font-semibold px-6 py-3">Giá</th>
+              <th class="text-left font-semibold px-6 py-3">Đăng ký</th>
+              <th class="text-left font-semibold px-6 py-3">Doanh thu</th>
+              <th class="text-left font-semibold px-6 py-3">Trạng thái</th>
+              <th class="text-left font-semibold px-6 py-3">Ngày tạo</th>
+              <th class="text-right font-semibold px-6 py-3">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="mkd-course-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Tạo / sửa khóa học</h2>
+          <p class="text-xs text-slate-500 mt-1">Demo CRUD (lưu localStorage `mkd-admin-courses`).</p>
+        </div>
+        <button
+          id="mkd-course-reset-btn"
+          type="button"
+          class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Reset form
+        </button>
+      </div>
+      <form id="mkd-course-form" class="px-6 py-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="block sm:col-span-2">
+          <span class="text-xs font-medium text-slate-600">Tên khóa học</span>
+          <input
+            id="mkd-course-title"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ví dụ: ReactJS từ Zero tới Hero"
+            required
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Số buổi</span>
+          <input
+            id="mkd-course-sessions"
+            type="number"
+            min="1"
+            step="1"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ví dụ: 7"
+            required
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Giảng viên</span>
+          <input
+            id="mkd-course-teacher"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Tên giảng viên"
+            required
+          />
+        </label>
+        <label class="block sm:col-span-2 lg:col-span-4">
+          <span class="text-xs font-medium text-slate-600">Mô tả ngắn</span>
+          <textarea
+            id="mkd-course-short-desc"
+            rows="3"
+            class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Mô tả ngắn hiển thị ở thẻ khóa học..."
+            required
+          ></textarea>
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Icon (text)</span>
+          <input
+            id="mkd-course-icon"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ví dụ: Git"
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Icon slug (tuỳ chọn)</span>
+          <input
+            id="mkd-course-icon-slug"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ví dụ: lucide:trending-up"
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Giá</span>
+          <input
+            id="mkd-course-price"
+            type="number"
+            min="0"
+            step="1000"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="0"
+            required
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Trạng thái</span>
+          <select
+            id="mkd-course-status"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="published">Đang mở bán</option>
+            <option value="draft">Nháp</option>
+            <option value="hidden">Đã ẩn</option>
+          </select>
+        </label>
+        <div class="sm:col-span-2 lg:col-span-4 flex items-center justify-end gap-2 pt-1">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"
+          >
+            Lưu
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { requireAdmin, bindAdminLogout } from "./js/session.js";
+    import { courses as baseCourses } from "./js/courses-data.js";
+
+    renderStudentNavbar("admin-courses", { forceAdmin: true });
+    renderSiteFooter();
+
+    await requireAdmin({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+    bindAdminLogout({ redirectTo: "auth.html" });
+
+    const STORAGE_KEY_ADMIN_COURSES = "mkd-admin-courses";
+
+    function loadAdminCourses(seed) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_ADMIN_COURSES);
+        if (!raw) return seed;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : seed;
+      } catch {
+        return seed;
+      }
+    }
+
+    function saveAdminCourses(list) {
+      localStorage.setItem(STORAGE_KEY_ADMIN_COURSES, JSON.stringify(list));
+    }
+
+    // Seed data khóa học: lấy từ catalog user (`courses-data.js`) để CRUD admin sync ra user.
+    const today = new Date().toISOString().slice(0, 10);
+    const seedCourses = (baseCourses || []).map((c) => ({
+      ...c,
+      teacher: c.teacher || "BCN Coach",
+      status: c.status || "published",
+      createdAt: c.createdAt || today
+    }));
+
+    let courses = loadAdminCourses(seedCourses);
+    // nếu localStorage chưa có, persist seed để lần sau sync
+    if (!localStorage.getItem(STORAGE_KEY_ADMIN_COURSES)) {
+      try {
+        saveAdminCourses(courses);
+      } catch {}
+    }
+
+    function formatVND(amount) {
+      return amount.toLocaleString("vi-VN") + " ₫";
+    }
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function loadInvoices() {
+      try {
+        const raw = localStorage.getItem("mkd-invoices");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function computeCourseStats() {
+      const regs = loadRegisteredCourses();
+      const invoices = loadInvoices().filter((x) => x && x.status === "paid");
+
+      const regCountByCourse = new Map();
+      regs.forEach((r) => {
+        const id = r?.courseId;
+        if (!id) return;
+        regCountByCourse.set(id, (regCountByCourse.get(id) || 0) + 1);
+      });
+
+      const revenueByCourse = new Map();
+      invoices.forEach((inv) => {
+        const id = inv?.courseId;
+        if (!id) return;
+        const amount = Number(inv?.amount ?? 0) || 0;
+        revenueByCourse.set(id, (revenueByCourse.get(id) || 0) + amount);
+      });
+
+      return { regs, invoices, regCountByCourse, revenueByCourse };
+    }
+
+    function getMergedCatalogCourses() {
+      const base = Array.isArray(baseCourses) ? baseCourses : [];
+      const overrides = Array.isArray(courses) ? courses : [];
+
+      const byId = new Map();
+      base.forEach((c) => {
+        if (c?.id) byId.set(c.id, c);
+      });
+
+      overrides.forEach((o) => {
+        if (!o?.id) return;
+        if (o._deleted === true) {
+          byId.delete(o.id);
+          return;
+        }
+        const b = byId.get(o.id);
+        byId.set(o.id, b ? { ...b, ...o } : o);
+      });
+
+      return Array.from(byId.values());
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function renderSummary() {
+      const { regs, invoices } = computeCourseStats();
+      const mergedActiveCourses = getMergedCatalogCourses();
+      const total = mergedActiveCourses.length;
+      const published = mergedActiveCourses.filter((c) => c.status === "published").length;
+      const revenue = invoices.reduce((acc, inv) => acc + (Number(inv?.amount ?? 0) || 0), 0);
+      setText("mkd-course-kpi-total", String(total));
+      setText("mkd-course-kpi-published", String(published));
+      setText("mkd-course-kpi-registrations", String(regs.length));
+      setText("mkd-course-kpi-revenue", formatVND(revenue));
+    }
+
+    function renderCourses() {
+      const tbody = document.getElementById("mkd-course-table-body");
+      const searchInput = document.getElementById("mkd-course-search");
+      const statusFilter = document.getElementById("mkd-course-status-filter");
+      const countLabel = document.getElementById("mkd-course-count-label");
+      if (!tbody) return;
+
+      const keyword = (searchInput?.value || "").toLowerCase().trim();
+      const status = statusFilter?.value || "";
+
+      const { regCountByCourse, revenueByCourse } = computeCourseStats();
+
+      const filtered = courses.filter((c) => {
+        if (c?._deleted) return false;
+        if (
+          keyword &&
+          !c.title.toLowerCase().includes(keyword) &&
+          !c.teacher.toLowerCase().includes(keyword)
+        ) {
+          return false;
+        }
+        if (status && c.status !== status) return false;
+        return true;
+      });
+
+      if (countLabel) {
+        const totalActive = getMergedCatalogCourses().length;
+        countLabel.textContent = filtered.length + " / " + totalActive + " khóa học";
+      }
+
+      tbody.innerHTML = filtered
+        .map((c) => {
+          const statusMap = {
+            published: { label: "Đang mở bán", cls: "bg-emerald-50 text-emerald-700" },
+            draft: { label: "Nháp", cls: "bg-slate-100 text-slate-600" },
+            hidden: { label: "Đã ẩn", cls: "bg-rose-50 text-rose-700" }
+          };
+          const info = statusMap[c.status] || statusMap.published;
+          const regCount = regCountByCourse.get(c.id) || 0;
+          const revenue = revenueByCourse.get(c.id) || 0;
+          return `
+            <tr data-course-id="${c.id}">
+              <td class="px-6 py-3">
+                <div class="min-w-0">
+                  <p class="font-medium text-slate-900 truncate">${c.title}</p>
+                  <p class="text-[11px] text-slate-400">ID: ${c.id}</p>
+                </div>
+              </td>
+              <td class="px-6 py-3 text-xs text-slate-600">${c.teacher}</td>
+              <td class="px-6 py-3 text-xs font-medium text-slate-900">${formatVND(c.price)}</td>
+              <td class="px-6 py-3 text-xs text-slate-600">${regCount}</td>
+              <td class="px-6 py-3 text-xs font-medium text-slate-900">${formatVND(revenue)}</td>
+              <td class="px-6 py-3">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${info.cls}">
+                  ${info.label}
+                </span>
+              </td>
+              <td class="px-6 py-3 text-xs text-slate-500">
+                ${new Date(c.createdAt).toLocaleDateString("vi-VN")}
+              </td>
+              <td class="px-6 py-3 text-right whitespace-nowrap">
+                <button
+                  type="button"
+                  class="text-xs font-medium text-primary hover:text-primary-soft mr-2"
+                  data-action="edit"
+                >
+                  Sửa
+                </button>
+                <button
+                  type="button"
+                  class="text-xs text-slate-500 hover:text-slate-800"
+                  data-action="toggle-visibility"
+                >
+                  ${c.status === "hidden" ? "Hiển thị" : "Ẩn"}
+                </button>
+                <button
+                  type="button"
+                  class="ml-3 text-xs text-rose-600 hover:text-rose-700"
+                  data-action="delete"
+                >
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    // Filter events
+    document.getElementById("mkd-course-search")?.addEventListener("input", renderCourses);
+    document.getElementById("mkd-course-status-filter")?.addEventListener("change", renderCourses);
+
+    // Inline edit / visibility toggle
+    document.getElementById("mkd-course-table-body")?.addEventListener("click", function (e) {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.getAttribute("data-action");
+      const tr = btn.closest("tr[data-course-id]");
+      if (!tr) return;
+      const courseId = tr.getAttribute("data-course-id");
+      const idx = courses.findIndex((c) => c.id === courseId);
+      if (idx === -1) return;
+
+      if (action === "edit") {
+        const c = courses[idx];
+        document.getElementById("mkd-course-title").value = c.title;
+        document.getElementById("mkd-course-sessions").value = c.sessions || 1;
+        document.getElementById("mkd-course-teacher").value = c.teacher;
+        document.getElementById("mkd-course-short-desc").value = c.shortDescription || "";
+        document.getElementById("mkd-course-icon").value = c.icon || "";
+        document.getElementById("mkd-course-icon-slug").value = c.iconSlug || "";
+        document.getElementById("mkd-course-price").value = c.price;
+        document.getElementById("mkd-course-status").value = c.status;
+        document.getElementById("mkd-course-form").dataset.editingId = c.id;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+
+      if (action === "toggle-visibility") {
+        const cur = courses[idx];
+        if (cur.status === "hidden") {
+          cur.status = "published";
+        } else if (cur.status === "published" || cur.status === "draft") {
+          cur.status = "hidden";
+        }
+        saveAdminCourses(courses);
+        renderCourses();
+        renderSummary();
+      }
+
+      if (action === "delete") {
+        const cur = courses[idx];
+        const ok = window.confirm(`Xóa khóa học "${cur.title}"?\n\nThao tác này sẽ ẩn khỏi phía user.`);
+        if (!ok) return;
+
+        const isBase = Array.isArray(baseCourses) && baseCourses.some((c) => c?.id === cur.id);
+        if (isBase) {
+          courses[idx] = { id: cur.id, _deleted: true };
+        } else {
+          courses.splice(idx, 1);
+        }
+        saveAdminCourses(courses);
+        renderCourses();
+        renderSummary();
+      }
+    });
+
+    // Create new course button -> reset form
+    document.getElementById("mkd-course-create-btn")?.addEventListener("click", function () {
+      const form = document.getElementById("mkd-course-form");
+      form.reset();
+      delete form.dataset.editingId;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    });
+
+    // Reset form
+    document.getElementById("mkd-course-reset-btn")?.addEventListener("click", function () {
+      const form = document.getElementById("mkd-course-form");
+      form.reset();
+      delete form.dataset.editingId;
+    });
+
+    // Submit form demo
+    document.getElementById("mkd-course-form")?.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const title = document.getElementById("mkd-course-title").value.trim();
+      const sessions = Number(document.getElementById("mkd-course-sessions").value || "1");
+      const teacher = document.getElementById("mkd-course-teacher").value.trim();
+      const shortDescription = document.getElementById("mkd-course-short-desc").value.trim();
+      const icon = document.getElementById("mkd-course-icon").value.trim();
+      const iconSlug = document.getElementById("mkd-course-icon-slug").value.trim();
+      const price = Number(document.getElementById("mkd-course-price").value || "0");
+      const status = document.getElementById("mkd-course-status").value || "published";
+      if (!title || !teacher || !shortDescription) {
+        alert("Vui lòng nhập đầy đủ Tên khóa học, Giảng viên và Mô tả ngắn.");
+        return;
+      }
+      if (!Number.isFinite(sessions) || sessions < 1) {
+        alert("Số buổi không hợp lệ.");
+        return;
+      }
+      if (!Number.isFinite(price) || price < 0) {
+        alert("Giá không hợp lệ.");
+        return;
+      }
+
+      const editingId = form.dataset.editingId;
+      if (editingId) {
+        const idx = courses.findIndex((c) => c.id === editingId);
+        if (idx !== -1) {
+          courses[idx].title = title;
+          courses[idx].sessions = sessions;
+          courses[idx].teacher = teacher;
+          courses[idx].shortDescription = shortDescription;
+          courses[idx].icon = icon || courses[idx].icon || "";
+          courses[idx].iconSlug = iconSlug || "";
+          courses[idx].price = price;
+          courses[idx].status = status;
+        }
+      } else {
+        const nextNum =
+          Math.max(
+            0,
+            ...courses
+              .map((c) => String(c.id || "").replace(/\D+/g, ""))
+              .map((n) => parseInt(n || "0", 10))
+              .filter((n) => Number.isFinite(n))
+          ) + 1;
+        const id = "C" + String(nextNum).padStart(3, "0");
+        courses.push({
+          id,
+          title,
+          sessions,
+          teacher,
+          shortDescription,
+          icon: icon || title.trim()[0]?.toUpperCase() || "C",
+          iconSlug: iconSlug || "",
+          price,
+          status,
+          createdAt: new Date().toISOString().slice(0, 10)
+        });
+      }
+
+      saveAdminCourses(courses);
+      form.reset();
+      delete form.dataset.editingId;
+      renderCourses();
+      renderSummary();
+      alert("Đã lưu khóa học (demo, chưa kết nối backend).");
+    });
+
+    window.addEventListener("storage", (e) => {
+      if (e.key === "mkd-registered-courses" || e.key === "mkd-invoices") {
+        renderCourses();
+        renderSummary();
+      }
+    });
+
+    renderCourses();
+    renderSummary();
+  </script>
+</body>
+</html>
+

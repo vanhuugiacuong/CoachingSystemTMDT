@@ -1,9 +1,11 @@
 // layout.js
 // Render shared top navbar for student area
 
-export function renderStudentNavbar(active) {
+export function renderStudentNavbar(active, options = {}) {
   const container = document.getElementById("mkd-navbar");
   if (!container) return;
+
+  const isAdmin = Boolean(options.forceAdmin);
 
   const linkBase =
     "inline-flex items-center h-10 px-4 text-sm font-medium rounded-full transition-colors";
@@ -11,13 +13,22 @@ export function renderStudentNavbar(active) {
     "text-slate-500 hover:text-slate-900 hover:bg-slate-100";
   const linkActive = "bg-slate-900 text-white";
 
-  const tabs = [
+  const studentTabs = [
     { id: "dashboard", label: "Dashboard", href: "dashboard.html" },
     { id: "timetable", label: "Thời khóa biểu", href: "timetable.html" },
     { id: "courses", label: "Khóa học", href: "courses.html" },
     { id: "code-lab", label: "Code Lab", href: "code-lab.html" },
     { id: "groups", label: "Nhóm học tập", href: "groups.html" }
   ];
+
+  const adminTabs = [
+    { id: "admin-dashboard", label: "Dashboard", href: "admin-dashboard.html" },
+    { id: "admin-courses", label: "Courses", href: "admin-courses.html" },
+    { id: "admin-users", label: "Users", href: "admin-users.html" },
+    { id: "admin-mentors", label: "Mentors", href: "#" }
+  ];
+
+  const tabs = isAdmin ? adminTabs : studentTabs;
 
   container.innerHTML = `
     <header class="w-full border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -51,10 +62,10 @@ export function renderStudentNavbar(active) {
           </nav>
 
           <div class="flex items-center gap-3">
-            <a href="profile.html" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <a href="${isAdmin ? "admin-dashboard.html" : "profile.html"}" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
               <div class="hidden sm:flex flex-col items-end">
-                <span class="text-xs font-medium text-slate-900">Học viên</span>
-                <span class="text-[11px] text-slate-500" id="mkd-user-email">Student</span>
+                <span class="text-xs font-medium text-slate-900" id="mkd-user-email">Student</span>
+                <span class="text-[11px] text-slate-500">${isAdmin ? "Admin" : "Học viên"}</span>
               </div>
               <div class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
                 <span id="mkd-user-initial">C</span>

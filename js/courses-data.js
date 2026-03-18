@@ -503,7 +503,55 @@ export function formatPriceVND(n) {
   return new Intl.NumberFormat("vi-VN").format(n) + " ₫";
 }
 
+function loadAdminCoursesOverride() {
+  try {
+    const raw = window.localStorage.getItem("mkd-admin-courses");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function mergeCourses(baseList, overrideList) {
+  const base = Array.isArray(baseList) ? baseList : [];
+  const overrides = Array.isArray(overrideList) ? overrideList : [];
+
+  const byId = new Map();
+  base.forEach((c) => {
+    if (c?.id) byId.set(c.id, c);
+  });
+
+  // override wins; also merges on top of base to keep missing fields
+  overrides.forEach((o) => {
+    if (!o?.id) return;
+    if (o._deleted === true) {
+      byId.delete(o.id);
+      return;
+    }
+    const b = byId.get(o.id);
+    byId.set(o.id, b ? { ...b, ...o } : o);
+  });
+
+  return Array.from(byId.values());
+}
+
+/**
+ * Get courses catalog.
+ * - Always keep the static seed `courses`.
+ * - If admin has created/edited courses in localStorage (`mkd-admin-courses`), merge them in:
+ *   - Same `id` => admin overrides base (and keeps base fields if admin omitted them)
+ *   - New `id`  => added to catalog
+ */
+export function getCourses({ includeHidden = false } = {}) {
+  const override = loadAdminCoursesOverride();
+  const list = override ? mergeCourses(courses, override) : courses;
+  if (includeHidden) return list;
+  return list.filter((c) => (c?.status || "published") !== "hidden");
+}
+
 export function getCourseById(id) {
-  return courses.find((c) => c.id === id);
+  return getCourses({ includeHidden: true }).find((c) => c.id === id);
 }
 

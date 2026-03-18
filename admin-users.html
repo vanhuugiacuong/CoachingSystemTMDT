@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý người dùng - Admin BCN Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#2563eb",
+              soft: "#60a5fa"
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Quản lý người dùng</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Tổng hợp user (mô phỏng) từ hoạt động localStorage + quản trị trạng thái.
+          </p>
+        </div>
+        <button
+          id="mkd-user-import-btn"
+          type="button"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+        >
+          Đồng bộ từ hoạt động
+        </button>
+      </div>
+    </header>
+
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tổng user</p>
+        <p id="mkd-user-kpi-total" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Đang hoạt động</p>
+        <p id="mkd-user-kpi-active" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tổng đăng ký</p>
+        <p id="mkd-user-kpi-registrations" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Doanh thu (paid)</p>
+        <p id="mkd-user-kpi-revenue" class="mt-2 text-2xl font-semibold text-slate-900">0 ₫</p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex-1 flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-600" for="mkd-user-search">Tìm kiếm</label>
+            <input
+              id="mkd-user-search"
+              type="text"
+              placeholder="Tìm theo tên hoặc email..."
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div class="sm:w-52">
+            <label class="text-xs font-medium text-slate-600" for="mkd-user-role-filter">Role</label>
+            <select
+              id="mkd-user-role-filter"
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Tất cả</option>
+              <option value="admin">Admin</option>
+              <option value="student">Học viên</option>
+            </select>
+          </div>
+          <div class="sm:w-52">
+            <label class="text-xs font-medium text-slate-600" for="mkd-user-status-filter">Trạng thái</label>
+            <select
+              id="mkd-user-status-filter"
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Tất cả</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="banned">Đã khóa</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-xs text-slate-500">
+          <span id="mkd-user-count-label">0 / 0 người dùng</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-slate-500 bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th class="text-left font-semibold px-6 py-3">Người dùng</th>
+              <th class="text-left font-semibold px-6 py-3">Email</th>
+              <th class="text-left font-semibold px-6 py-3">Role</th>
+              <th class="text-left font-semibold px-6 py-3">Đăng ký</th>
+              <th class="text-left font-semibold px-6 py-3">Chi tiêu</th>
+              <th class="text-left font-semibold px-6 py-3">Trạng thái</th>
+              <th class="text-right font-semibold px-6 py-3">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="mkd-user-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { requireAdmin, bindAdminLogout, ADMIN_EMAILS } from "./js/session.js";
+
+    renderStudentNavbar("admin-users", { forceAdmin: true });
+    renderSiteFooter();
+
+    await requireAdmin({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+    bindAdminLogout({ redirectTo: "auth.html" });
+
+    const STORAGE_KEY_ADMIN_USERS = "mkd-admin-users";
+
+    function formatVND(amount) {
+      return new Intl.NumberFormat("vi-VN").format(amount || 0) + " ₫";
+    }
+
+    function loadList(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function loadAdminUsers(seed) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_ADMIN_USERS);
+        if (!raw) return seed;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : seed;
+      } catch {
+        return seed;
+      }
+    }
+
+    function saveAdminUsers(list) {
+      localStorage.setItem(STORAGE_KEY_ADMIN_USERS, JSON.stringify(list));
+    }
+
+    function makeUserIdFromEmail(email) {
+      const safe = String(email || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      return safe ? `U-${safe}` : `U-${Date.now().toString(36)}`;
+    }
+
+    function deriveUsersFromActivity() {
+      const regs = loadList("mkd-registered-courses");
+      const invoices = loadList("mkd-invoices").filter((x) => x && x.status === "paid");
+      const chats = loadList("mkd-mentor-chats");
+
+      const emails = new Set();
+      regs.forEach((r) => r?.userEmail && emails.add(String(r.userEmail).toLowerCase()));
+      invoices.forEach((i) => i?.userEmail && emails.add(String(i.userEmail).toLowerCase()));
+      chats.forEach((c) => c?.userEmail && emails.add(String(c.userEmail).toLowerCase()));
+      (ADMIN_EMAILS || []).forEach((e) => emails.add(String(e).toLowerCase()));
+
+      const today = new Date().toISOString().slice(0, 10);
+      return Array.from(emails)
+        .filter(Boolean)
+        .map((email) => ({
+          id: makeUserIdFromEmail(email),
+          name: email.split("@")[0] || "User",
+          email,
+          role: (ADMIN_EMAILS || []).includes(email) ? "admin" : "student",
+          createdAt: today,
+          status: "active"
+        }));
+    }
+
+    function mergeUsers(existing, incoming) {
+      const byEmail = new Map();
+      (existing || []).forEach((u) => {
+        if (u?.email) byEmail.set(String(u.email).toLowerCase(), u);
+      });
+      (incoming || []).forEach((u) => {
+        const email = String(u?.email || "").toLowerCase();
+        if (!email) return;
+        const prev = byEmail.get(email);
+        byEmail.set(email, prev ? { ...u, ...prev } : u);
+      });
+      return Array.from(byEmail.values());
+    }
+
+    function computeUserStats() {
+      const regs = loadList("mkd-registered-courses");
+      const invoices = loadList("mkd-invoices").filter((x) => x && x.status === "paid");
+
+      const regCountByEmail = new Map();
+      regs.forEach((r) => {
+        const email = String(r?.userEmail || "").toLowerCase();
+        if (!email) return;
+        regCountByEmail.set(email, (regCountByEmail.get(email) || 0) + 1);
+      });
+
+      const spendByEmail = new Map();
+      invoices.forEach((inv) => {
+        const email = String(inv?.userEmail || "").toLowerCase();
+        if (!email) return;
+        const amt = Number(inv?.amount ?? 0) || 0;
+        spendByEmail.set(email, (spendByEmail.get(email) || 0) + amt);
+      });
+
+      return { regs, invoices, regCountByEmail, spendByEmail };
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    let users = loadAdminUsers(deriveUsersFromActivity());
+    if (!localStorage.getItem(STORAGE_KEY_ADMIN_USERS)) {
+      try {
+        saveAdminUsers(users);
+      } catch {}
+    }
+
+    function renderSummary() {
+      const { regs, invoices } = computeUserStats();
+      const total = users.length;
+      const active = users.filter((u) => u.status === "active").length;
+      const revenue = invoices.reduce((acc, inv) => acc + (Number(inv?.amount ?? 0) || 0), 0);
+      setText("mkd-user-kpi-total", String(total));
+      setText("mkd-user-kpi-active", String(active));
+      setText("mkd-user-kpi-registrations", String(regs.length));
+      setText("mkd-user-kpi-revenue", formatVND(revenue));
+    }
+
+    function renderUsers() {
+      const tbody = document.getElementById("mkd-user-table-body");
+      const searchInput = document.getElementById("mkd-user-search");
+      const roleFilter = document.getElementById("mkd-user-role-filter");
+      const statusFilter = document.getElementById("mkd-user-status-filter");
+      const countLabel = document.getElementById("mkd-user-count-label");
+      if (!tbody) return;
+
+      const keyword = (searchInput?.value || "").toLowerCase().trim();
+      const role = roleFilter?.value || "";
+      const status = statusFilter?.value || "";
+
+      const { regCountByEmail, spendByEmail } = computeUserStats();
+
+      const filtered = users.filter((u) => {
+        if (keyword && !u.name.toLowerCase().includes(keyword) && !u.email.toLowerCase().includes(keyword)) {
+          return false;
+        }
+        if (role && u.role !== role) return false;
+        if (status && u.status !== status) return false;
+        return true;
+      });
+
+      if (countLabel) {
+        countLabel.textContent = filtered.length + " / " + users.length + " người dùng";
+      }
+
+      tbody.innerHTML = filtered
+        .map((u) => {
+          const statusBadgeClass =
+            u.status === "active"
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-rose-50 text-rose-700";
+          const statusText = u.status === "active" ? "Đang hoạt động" : "Đã khóa";
+          const roleLabel = u.role === "admin" ? "Admin" : "Học viên";
+          const email = String(u.email || "").toLowerCase();
+          const regCount = regCountByEmail.get(email) || 0;
+          const spend = spendByEmail.get(email) || 0;
+          return `
+            <tr data-user-id="${u.id}">
+              <td class="px-6 py-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center text-[11px] font-semibold text-slate-600">
+                    ${(u.name || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-900 truncate">${u.name}</p>
+                    <p class="text-[11px] text-slate-400">ID: ${u.id}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3 text-xs text-slate-600">${u.email}</td>
+              <td class="px-6 py-3 text-xs">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                  u.role === "admin"
+                    ? "bg-amber-50 text-amber-700"
+                    : "bg-indigo-50 text-indigo-700"
+                }">
+                  ${roleLabel}
+                </span>
+              </td>
+              <td class="px-6 py-3 text-xs text-slate-600">${regCount}</td>
+              <td class="px-6 py-3 text-xs font-medium text-slate-900">${formatVND(spend)}</td>
+              <td class="px-6 py-3">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusBadgeClass}">
+                  ${statusText}
+                </span>
+              </td>
+              <td class="px-6 py-3 text-right whitespace-nowrap">
+                <button
+                  type="button"
+                  class="text-xs font-medium text-primary hover:text-primary-soft mr-2"
+                  data-action="toggle-status"
+                >
+                  ${u.status === "active" ? "Khóa" : "Mở khóa"}
+                </button>
+                <button
+                  type="button"
+                  class="text-xs text-slate-500 hover:text-slate-800"
+                  data-action="toggle-role"
+                >
+                  Đổi role
+                </button>
+                <button
+                  type="button"
+                  class="ml-3 text-xs text-rose-600 hover:text-rose-700"
+                  data-action="delete"
+                >
+                  Xóa
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    // Event filters
+    document.getElementById("mkd-user-search")?.addEventListener("input", renderUsers);
+    document.getElementById("mkd-user-role-filter")?.addEventListener("change", renderUsers);
+    document.getElementById("mkd-user-status-filter")?.addEventListener("change", renderUsers);
+
+    // Handle actions trong bảng (toggle status/role chỉ là demo)
+    document.getElementById("mkd-user-table-body")?.addEventListener("click", function (e) {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.getAttribute("data-action");
+      const tr = btn.closest("tr[data-user-id]");
+      if (!tr) return;
+      const userId = tr.getAttribute("data-user-id");
+      const idx = users.findIndex((u) => u.id === userId);
+      if (idx === -1) return;
+
+      if (action === "toggle-status") {
+        users[idx].status = users[idx].status === "active" ? "banned" : "active";
+      }
+      if (action === "toggle-role") {
+        users[idx].role = users[idx].role === "admin" ? "student" : "admin";
+      }
+      if (action === "delete") {
+        const cur = users[idx];
+        const ok = window.confirm(`Xóa user "${cur.email}" khỏi danh sách quản trị?\n\nChỉ ảnh hưởng localStorage.`);
+        if (!ok) return;
+        users.splice(idx, 1);
+      }
+      saveAdminUsers(users);
+      renderUsers();
+      renderSummary();
+    });
+
+    document.getElementById("mkd-user-import-btn")?.addEventListener("click", () => {
+      const incoming = deriveUsersFromActivity();
+      users = mergeUsers(users, incoming);
+      saveAdminUsers(users);
+      renderUsers();
+      renderSummary();
+    });
+
+    renderUsers();
+    renderSummary();
+  </script>
+</body>
+</html>
+

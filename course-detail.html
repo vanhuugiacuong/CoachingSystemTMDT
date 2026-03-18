@@ -251,6 +251,39 @@
     renderStudentNavbar("courses");
     renderSiteFooter();
 
+    // Firebase guard: require signed-in user to register
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+      authDomain: "fir-e1171.firebaseapp.com",
+      projectId: "fir-e1171",
+      storageBucket: "fir-e1171.firebasestorage.app",
+      messagingSenderId: "604994482307",
+      appId: "1:604994482307:web:15917def2b6580b75aebb6",
+      measurementId: "G-XKBJMTM0YW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let currentUser = null;
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user || null;
+      if (!user) {
+        // allow browsing course detail, but block registration flow
+        const btn = document.getElementById("mkd-open-register");
+        if (btn) btn.textContent = "Đăng nhập để đăng ký";
+        return;
+      }
+      try {
+        window.localStorage.setItem("mkd-last-user-email", (user.email || "").toLowerCase());
+      } catch {}
+    });
+
     function getCourseIconClasses(courseId) {
       let bg, text, hex;
       switch (courseId) {
@@ -365,6 +398,10 @@
 
     function handleConfirmRegister() {
       if (!course) return;
+      if (!currentUser) {
+        window.location.href = "auth.html";
+        return;
+      }
       const typeInputs = document.querySelectorAll('input[name="mkd-register-type"]');
       let selectedType = "individual";
       typeInputs.forEach((input) => {
@@ -376,6 +413,8 @@
       const registered = loadRegisteredCourses().map((r) => r.courseId);
       const { finalPrice } = calculateFinalPrice(course.id, course.price, registered);
       saveRegisteredCourse({
+        userEmail: currentUser.email || "",
+        userUid: currentUser.uid || "",
         courseId: course.id,
         registrationType: selectedType,
         price: finalPrice,

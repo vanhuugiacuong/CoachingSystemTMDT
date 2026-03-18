@@ -305,6 +305,8 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    let currentUserEmail = "";
+    let currentUserUid = "";
 
     function loadRegisteredCourses() {
       try {
@@ -509,6 +511,8 @@
       const id = `INV-${Date.now().toString(36)}-${Math.random().toString(16).slice(2, 6)}`.toUpperCase();
       const invoice = {
         id,
+        userEmail: currentUserEmail,
+        userUid: currentUserUid,
         courseId,
         courseTitle: course?.title || "Khóa học",
         amount: amount ?? course?.price ?? 0,
@@ -627,16 +631,21 @@
         window.location.href = "auth.html";
         return;
       }
+      currentUserEmail = (user.email || "").toLowerCase();
+      currentUserUid = user.uid || "";
+      try {
+        window.localStorage.setItem("mkd-last-user-email", currentUserEmail);
+      } catch {}
 
       const nameEl = document.getElementById("mkd-student-name");
       const emailEl = document.getElementById("mkd-user-email");
       const initialEl = document.getElementById("mkd-user-initial");
 
-      if (user.displayName && nameEl) {
-        nameEl.textContent = user.displayName;
+      if (nameEl) {
+        nameEl.textContent = user.displayName || user.email || "Học viên";
       }
-      if (user.email && emailEl) {
-        emailEl.textContent = user.email;
+      if (emailEl) {
+        emailEl.textContent = user.displayName || user.email || "Student";
       }
       if (initialEl) {
         const initial = (user.displayName || user.email || "?").trim()[0] || "?";
