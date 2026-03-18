@@ -1,6 +1,41 @@
 // layout.js
 // Render shared top navbar for student area
 
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBapOvYWZyuUPb1cWOAen6H95MpoLJtzpA",
+  authDomain: "fir-e1171.firebaseapp.com",
+  projectId: "fir-e1171",
+  storageBucket: "fir-e1171.firebasestorage.app",
+  messagingSenderId: "604994482307",
+  appId: "1:604994482307:web:15917def2b6580b75aebb6",
+  measurementId: "G-XKBJMTM0YW"
+};
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+function bindGlobalLogoutOnce() {
+  if (typeof window === "undefined") return;
+  if (window.__mkdLogoutBound) return;
+  window.__mkdLogoutBound = true;
+
+  document.addEventListener("click", async (event) => {
+    const btn = event.target?.closest?.("#mkd-logout-btn");
+    if (!btn) return;
+    event.preventDefault();
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error("Logout error:", e);
+    } finally {
+      window.location.href = "auth.html";
+    }
+  });
+}
+
 export function renderStudentNavbar(active, options = {}) {
   const container = document.getElementById("mkd-navbar");
   if (!container) return;
@@ -83,6 +118,8 @@ export function renderStudentNavbar(active, options = {}) {
       </div>
     </header>
   `;
+
+  bindGlobalLogoutOnce();
 }
 
 // Shared footer for BCN Coach pages
