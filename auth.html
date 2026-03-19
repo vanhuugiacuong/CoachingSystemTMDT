@@ -118,13 +118,11 @@
       GoogleAuthProvider,
       signInWithPopup
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getRoleFromEmail } from "./js/session.js";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-
-    // TODO: Dán gmail admin của bạn vào đây (lowercase)
-    const ADMIN_EMAILS = ["vanhuugiacuong@gmail.com", "minhnhut006lob@gmail.com"];
 
     const googleBtn = document.getElementById("google-signin-btn");
     if (googleBtn) {
@@ -136,8 +134,13 @@
           try {
             window.localStorage.setItem("mkd-last-user-email", email);
           } catch {}
-          if (ADMIN_EMAILS.includes(email)) {
+          const role = getRoleFromEmail(email);
+          if (role === "admin") {
             window.location.href = "admin-dashboard.html";
+            return;
+          }
+          if (role === "mentor") {
+            window.location.href = "mentor-dashboard.html";
             return;
           }
           window.location.href = "dashboard.html";

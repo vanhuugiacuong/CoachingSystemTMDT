@@ -25,8 +25,24 @@ export const ADMIN_EMAILS = [
   "minhnhut006lob@gmail.com"
 ];
 
+// TODO: Dán gmail mentor của bạn vào đây (lowercase)
+export const MENTOR_EMAILS = [
+  "vanhuugiacuong174@gmail.com",
+];
+
 export function isAdminEmail(email) {
   return ADMIN_EMAILS.includes(String(email || "").toLowerCase());
+}
+
+export function isMentorEmail(email) {
+  return MENTOR_EMAILS.includes(String(email || "").toLowerCase());
+}
+
+export function getRoleFromEmail(email) {
+  const e = String(email || "").toLowerCase();
+  if (isAdminEmail(e)) return "admin";
+  if (isMentorEmail(e)) return "mentor";
+  return "student";
 }
 
 export function bindAdminLogout({ redirectTo = "auth.html" } = {}) {
@@ -65,6 +81,30 @@ export function requireAdmin({ redirectTo = "auth.html", denyTo = "dashboard.htm
         initialEl.textContent = initial.toUpperCase();
       }
 
+      resolve(user);
+    });
+  });
+}
+
+export function requireMentor({ redirectTo = "auth.html", denyTo = "dashboard.html" } = {}) {
+  return new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = redirectTo;
+        return;
+      }
+      const email = (user.email || "").toLowerCase();
+      if (!isMentorEmail(email) && !isAdminEmail(email)) {
+        window.location.href = denyTo;
+        return;
+      }
+      const emailEl = document.getElementById("mkd-user-email");
+      const initialEl = document.getElementById("mkd-user-initial");
+      if (emailEl) emailEl.textContent = user.displayName || user.email || "Mentor";
+      if (initialEl) {
+        const initial = (user.displayName || user.email || "M").trim()[0] || "M";
+        initialEl.textContent = initial.toUpperCase();
+      }
       resolve(user);
     });
   });

@@ -157,6 +157,15 @@
             required
           />
         </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Mentor phụ trách</span>
+          <select
+            id="mkd-course-mentor"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">(Chưa gán)</option>
+          </select>
+        </label>
         <label class="block sm:col-span-2 lg:col-span-4">
           <span class="text-xs font-medium text-slate-600">Mô tả ngắn</span>
           <textarea
@@ -235,6 +244,7 @@
     bindAdminLogout({ redirectTo: "auth.html" });
 
     const STORAGE_KEY_ADMIN_COURSES = "mkd-admin-courses";
+    const STORAGE_KEY_ADMIN_MENTORS = "mkd-admin-mentors";
 
     function loadAdminCourses(seed) {
       try {
@@ -249,6 +259,33 @@
 
     function saveAdminCourses(list) {
       localStorage.setItem(STORAGE_KEY_ADMIN_COURSES, JSON.stringify(list));
+    }
+
+    function loadMentors() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_ADMIN_MENTORS);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function renderMentorOptions(selectedId) {
+      const select = document.getElementById("mkd-course-mentor");
+      if (!select) return;
+      const mentors = loadMentors().filter((m) => (m?.status || "active") === "active");
+      const options = [
+        `<option value="">(Chưa gán)</option>`,
+        ...mentors.map((m) => {
+          const id = m.id || "";
+          const label = `${m.name || "Mentor"}${m.email ? ` · ${m.email}` : ""}`;
+          const sel = selectedId && id === selectedId ? "selected" : "";
+          return `<option value="${id}" ${sel}>${label}</option>`;
+        })
+      ];
+      select.innerHTML = options.join("");
     }
 
     // Seed data khóa học: lấy từ catalog user (`courses-data.js`) để CRUD admin sync ra user.
@@ -464,6 +501,7 @@
         document.getElementById("mkd-course-title").value = c.title;
         document.getElementById("mkd-course-sessions").value = c.sessions || 1;
         document.getElementById("mkd-course-teacher").value = c.teacher;
+        renderMentorOptions(c.mentorId || "");
         document.getElementById("mkd-course-short-desc").value = c.shortDescription || "";
         document.getElementById("mkd-course-icon").value = c.icon || "";
         document.getElementById("mkd-course-icon-slug").value = c.iconSlug || "";
@@ -506,6 +544,7 @@
     document.getElementById("mkd-course-create-btn")?.addEventListener("click", function () {
       const form = document.getElementById("mkd-course-form");
       form.reset();
+      renderMentorOptions("");
       delete form.dataset.editingId;
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
     });
@@ -514,6 +553,7 @@
     document.getElementById("mkd-course-reset-btn")?.addEventListener("click", function () {
       const form = document.getElementById("mkd-course-form");
       form.reset();
+      renderMentorOptions("");
       delete form.dataset.editingId;
     });
 
@@ -524,6 +564,7 @@
       const title = document.getElementById("mkd-course-title").value.trim();
       const sessions = Number(document.getElementById("mkd-course-sessions").value || "1");
       const teacher = document.getElementById("mkd-course-teacher").value.trim();
+      const mentorId = document.getElementById("mkd-course-mentor")?.value || "";
       const shortDescription = document.getElementById("mkd-course-short-desc").value.trim();
       const icon = document.getElementById("mkd-course-icon").value.trim();
       const iconSlug = document.getElementById("mkd-course-icon-slug").value.trim();
@@ -549,6 +590,7 @@
           courses[idx].title = title;
           courses[idx].sessions = sessions;
           courses[idx].teacher = teacher;
+          courses[idx].mentorId = mentorId || "";
           courses[idx].shortDescription = shortDescription;
           courses[idx].icon = icon || courses[idx].icon || "";
           courses[idx].iconSlug = iconSlug || "";
@@ -570,6 +612,7 @@
           title,
           sessions,
           teacher,
+          mentorId: mentorId || "",
           shortDescription,
           icon: icon || title.trim()[0]?.toUpperCase() || "C",
           iconSlug: iconSlug || "",
@@ -596,6 +639,7 @@
 
     renderCourses();
     renderSummary();
+    renderMentorOptions("");
   </script>
 </body>
 </html>

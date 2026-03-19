@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý giảng viên (Mentor) - Admin BCN Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Quản lý giảng viên (Mentor)</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            CRUD mentor (localStorage) + dùng để gán mentor vào khóa học.
+          </p>
+        </div>
+        <button
+          id="mkd-mentor-create-btn"
+          type="button"
+          class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-soft"
+        >
+          + Tạo mentor
+        </button>
+      </div>
+    </header>
+
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tổng mentor</p>
+        <p id="mkd-mentor-kpi-total" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Đang hoạt động</p>
+        <p id="mkd-mentor-kpi-active" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Đã tắt</p>
+        <p id="mkd-mentor-kpi-inactive" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex-1 flex flex-col sm:flex-row gap-3">
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-600" for="mkd-mentor-search">Tìm kiếm</label>
+            <input
+              id="mkd-mentor-search"
+              type="text"
+              placeholder="Tìm theo tên, email, kỹ năng..."
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
+          <div class="sm:w-52">
+            <label class="text-xs font-medium text-slate-600" for="mkd-mentor-status-filter">Trạng thái</label>
+            <select
+              id="mkd-mentor-status-filter"
+              class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Tất cả</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Đã tắt</option>
+            </select>
+          </div>
+        </div>
+        <div class="text-xs text-slate-500">
+          <span id="mkd-mentor-count-label">0 / 0 mentor</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs text-slate-500 bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th class="text-left font-semibold px-6 py-3">Mentor</th>
+              <th class="text-left font-semibold px-6 py-3">Email</th>
+              <th class="text-left font-semibold px-6 py-3">Kỹ năng</th>
+              <th class="text-left font-semibold px-6 py-3">Trạng thái</th>
+              <th class="text-right font-semibold px-6 py-3">Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="mkd-mentor-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Tạo / sửa mentor</h2>
+          <p class="text-xs text-slate-500 mt-1">Lưu tại localStorage `mkd-admin-mentors`.</p>
+        </div>
+        <button
+          id="mkd-mentor-reset-btn"
+          type="button"
+          class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Reset form
+        </button>
+      </div>
+      <form id="mkd-mentor-form" class="px-6 py-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="block sm:col-span-2">
+          <span class="text-xs font-medium text-slate-600">Tên mentor</span>
+          <input
+            id="mkd-mentor-name"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Ví dụ: Nguyễn Văn D"
+            required
+          />
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-xs font-medium text-slate-600">Email</span>
+          <input
+            id="mkd-mentor-email"
+            type="email"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="mentor@example.com"
+            required
+          />
+        </label>
+        <label class="block sm:col-span-2 lg:col-span-3">
+          <span class="text-xs font-medium text-slate-600">Kỹ năng (phân tách bởi dấu phẩy)</span>
+          <input
+            id="mkd-mentor-skills"
+            type="text"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="React, Node, Firebase..."
+          />
+        </label>
+        <label class="block">
+          <span class="text-xs font-medium text-slate-600">Trạng thái</span>
+          <select
+            id="mkd-mentor-status"
+            class="mt-1 w-full h-10 rounded-xl border border-slate-200 px-3 bg-slate-50 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="active">Đang hoạt động</option>
+            <option value="inactive">Đã tắt</option>
+          </select>
+        </label>
+        <div class="sm:col-span-2 lg:col-span-4 flex items-center justify-end gap-2 pt-1">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center h-10 px-5 rounded-xl bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"
+          >
+            Lưu
+          </button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { requireAdmin, bindAdminLogout } from "./js/session.js";
+
+    renderStudentNavbar("admin-mentors", { forceAdmin: true });
+    renderSiteFooter();
+
+    await requireAdmin({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+    bindAdminLogout({ redirectTo: "auth.html" });
+
+    const STORAGE_KEY = "mkd-admin-mentors";
+
+    function loadMentors() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMentors(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function normalizeSkills(raw) {
+      return String(raw || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 12);
+    }
+
+    function buildMentorId(email) {
+      const safe = String(email || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-");
+      return safe ? `M-${safe}` : `M-${Date.now().toString(36)}`;
+    }
+
+    let mentors = loadMentors();
+
+    function renderSummary() {
+      const total = mentors.length;
+      const active = mentors.filter((m) => (m.status || "active") === "active").length;
+      const inactive = total - active;
+      setText("mkd-mentor-kpi-total", String(total));
+      setText("mkd-mentor-kpi-active", String(active));
+      setText("mkd-mentor-kpi-inactive", String(inactive));
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("mkd-mentor-table-body");
+      const searchInput = document.getElementById("mkd-mentor-search");
+      const statusFilter = document.getElementById("mkd-mentor-status-filter");
+      const countLabel = document.getElementById("mkd-mentor-count-label");
+      if (!tbody) return;
+
+      const keyword = (searchInput?.value || "").toLowerCase().trim();
+      const status = statusFilter?.value || "";
+
+      const filtered = mentors.filter((m) => {
+        const name = String(m.name || "").toLowerCase();
+        const email = String(m.email || "").toLowerCase();
+        const skills = Array.isArray(m.skills) ? m.skills.join(",").toLowerCase() : "";
+        if (keyword && !name.includes(keyword) && !email.includes(keyword) && !skills.includes(keyword)) {
+          return false;
+        }
+        if (status && (m.status || "active") !== status) return false;
+        return true;
+      });
+
+      if (countLabel) countLabel.textContent = `${filtered.length} / ${mentors.length} mentor`;
+
+      tbody.innerHTML = filtered
+        .map((m) => {
+          const statusCls =
+            (m.status || "active") === "active"
+              ? "bg-emerald-50 text-emerald-700"
+              : "bg-slate-100 text-slate-600";
+          const statusText = (m.status || "active") === "active" ? "Đang hoạt động" : "Đã tắt";
+          const skills = Array.isArray(m.skills) && m.skills.length ? m.skills : [];
+          return `
+            <tr data-mentor-id="${m.id}">
+              <td class="px-6 py-3">
+                <div class="flex items-center gap-2">
+                  <div class="h-8 w-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-semibold">
+                    ${(m.name || "?").trim()[0]?.toUpperCase?.() || "M"}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="font-medium text-slate-900 truncate">${m.name || "Mentor"}</p>
+                    <p class="text-[11px] text-slate-400">ID: ${m.id}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-3 text-xs text-slate-600">${m.email || "-"}</td>
+              <td class="px-6 py-3 text-xs text-slate-600">
+                ${skills.length ? skills.map((s) => `<span class="inline-flex mr-1 mb-1 items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700">${s}</span>`).join("") : "-"}
+              </td>
+              <td class="px-6 py-3">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${statusCls}">
+                  ${statusText}
+                </span>
+              </td>
+              <td class="px-6 py-3 text-right whitespace-nowrap">
+                <button type="button" class="text-xs font-medium text-primary hover:text-primary-soft mr-2" data-action="edit">Sửa</button>
+                <button type="button" class="text-xs text-slate-500 hover:text-slate-800" data-action="toggle">
+                  ${(m.status || "active") === "active" ? "Tắt" : "Bật"}
+                </button>
+                <button type="button" class="ml-3 text-xs text-rose-600 hover:text-rose-700" data-action="delete">Xóa</button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    document.getElementById("mkd-mentor-search")?.addEventListener("input", renderTable);
+    document.getElementById("mkd-mentor-status-filter")?.addEventListener("change", renderTable);
+
+    document.getElementById("mkd-mentor-create-btn")?.addEventListener("click", () => {
+      const form = document.getElementById("mkd-mentor-form");
+      form?.reset?.();
+      delete form?.dataset?.editingId;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    });
+
+    document.getElementById("mkd-mentor-reset-btn")?.addEventListener("click", () => {
+      const form = document.getElementById("mkd-mentor-form");
+      form?.reset?.();
+      delete form?.dataset?.editingId;
+    });
+
+    document.getElementById("mkd-mentor-table-body")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const tr = btn.closest("tr[data-mentor-id]");
+      if (!tr) return;
+      const id = tr.getAttribute("data-mentor-id");
+      const idx = mentors.findIndex((m) => m.id === id);
+      if (idx === -1) return;
+
+      const action = btn.getAttribute("data-action");
+      if (action === "edit") {
+        const m = mentors[idx];
+        const form = document.getElementById("mkd-mentor-form");
+        if (form) form.dataset.editingId = m.id;
+        document.getElementById("mkd-mentor-name").value = m.name || "";
+        document.getElementById("mkd-mentor-email").value = m.email || "";
+        document.getElementById("mkd-mentor-skills").value = Array.isArray(m.skills) ? m.skills.join(", ") : "";
+        document.getElementById("mkd-mentor-status").value = m.status || "active";
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+
+      if (action === "toggle") {
+        mentors[idx].status = (mentors[idx].status || "active") === "active" ? "inactive" : "active";
+        saveMentors(mentors);
+        renderSummary();
+        renderTable();
+      }
+
+      if (action === "delete") {
+        const ok = window.confirm(`Xóa mentor "${mentors[idx].name}"?`);
+        if (!ok) return;
+        mentors.splice(idx, 1);
+        saveMentors(mentors);
+        renderSummary();
+        renderTable();
+      }
+    });
+
+    document.getElementById("mkd-mentor-form")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const name = document.getElementById("mkd-mentor-name").value.trim();
+      const email = document.getElementById("mkd-mentor-email").value.trim().toLowerCase();
+      const skills = normalizeSkills(document.getElementById("mkd-mentor-skills").value);
+      const status = document.getElementById("mkd-mentor-status").value || "active";
+
+      if (!name || !email) {
+        alert("Vui lòng nhập đầy đủ Tên và Email.");
+        return;
+      }
+
+      const editingId = form.dataset.editingId;
+      if (editingId) {
+        const idx = mentors.findIndex((m) => m.id === editingId);
+        if (idx !== -1) {
+          mentors[idx] = { ...mentors[idx], name, email, skills, status };
+        }
+      } else {
+        const id = buildMentorId(email);
+        const exists = mentors.some((m) => m.id === id);
+        mentors.push({
+          id: exists ? `${id}-${Date.now().toString(36)}` : id,
+          name,
+          email,
+          skills,
+          status,
+          createdAt: new Date().toISOString().slice(0, 10)
+        });
+      }
+
+      saveMentors(mentors);
+      form.reset();
+      delete form.dataset.editingId;
+      renderSummary();
+      renderTable();
+      alert("Đã lưu mentor (demo).");
+    });
+
+    renderSummary();
+    renderTable();
+  </script>
+</body>
+</html>
+

@@ -60,7 +60,7 @@ export function renderStudentNavbar(active, options = {}) {
     { id: "admin-dashboard", label: "Dashboard", href: "admin-dashboard.html" },
     { id: "admin-courses", label: "Courses", href: "admin-courses.html" },
     { id: "admin-users", label: "Users", href: "admin-users.html" },
-    { id: "admin-mentors", label: "Mentors", href: "#" }
+    { id: "admin-mentors", label: "Mentors", href: "admin-mentors.html" }
   ];
 
   const tabs = isAdmin ? adminTabs : studentTabs;

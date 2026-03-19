@@ -425,9 +425,19 @@
       }
 
       if (mentorInitialEl || mentorNameEl || mentorRoleEl || mentorEmailEl) {
-        const defaultName = "Mentor Mikademy";
-        const name = defaultName;
-        const email = "mentor@example.com";
+        let name = "Mentor Mikademy";
+        let email = "mentor@example.com";
+        try {
+          const raw = localStorage.getItem("mkd-admin-mentors");
+          const mentors = raw ? JSON.parse(raw) : [];
+          if (Array.isArray(mentors) && course?.mentorId) {
+            const found = mentors.find((m) => m?.id === course.mentorId);
+            if (found) {
+              name = found.name || name;
+              email = found.email || email;
+            }
+          }
+        } catch {}
 
         if (mentorInitialEl) {
           mentorInitialEl.textContent = name.trim()[0] || "M";
