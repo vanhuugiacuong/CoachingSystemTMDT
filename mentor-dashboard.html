@@ -116,9 +116,10 @@
       return new Date(date).toISOString().slice(0, 10);
     }
 
-    function buildMentorUpcomingSessions({ horizonDays = 7 } = {}) {
+    function buildMentorUpcomingSessions({ horizonDays = 7, includePastDays = 0 } = {}) {
       const regs = loadRegisteredCourses();
       const now = new Date();
+      const startIso = isoKey(addDays(now, -Math.max(0, includePastDays)));
       const todayIso = isoKey(now);
       const endIso = isoKey(addDays(now, horizonDays));
       const sessions = [];
@@ -128,6 +129,11 @@
 
         const userEmail = String(reg.userEmail || "").toLowerCase();
         const course = getCourseById(reg.courseId) || reg;
+        const completedMeta =
+          reg && typeof reg.completedSessionsMeta === "object" && reg.completedSessionsMeta
+            ? reg.completedSessionsMeta
+            : {};
+        const completedSessions = Number(reg.completedSessions || 0) || 0;
         const scheduleSorted = [...reg.schedule]
           .filter((s) => s?.date)
           .sort((a, b) => {
@@ -137,8 +143,12 @@
 
         scheduleSorted.forEach((slot, idx) => {
           if (!slot.date) return;
-          // only keep from today -> horizon
-          if (slot.date < todayIso || slot.date > endIso) return;
+          // keep from (today - includePastDays) -> horizon
+          if (slot.date < startIso || slot.date > endIso) return;
+          const sessionNumber = idx + 1;
+          const completedAt =
+            completedMeta[String(sessionNumber)] || completedMeta[sessionNumber] || null;
+          const isCompleted = Boolean(completedAt) || sessionNumber <= completedSessions;
           sessions.push({
             userEmail,
             userUid: reg.userUid || "",
@@ -148,7 +158,9 @@
             date: slot.date,
             time: slot.time || "",
             note: slot.note || "",
-            sessionNumber: idx + 1
+            sessionNumber,
+            completedAt: completedAt || null,
+            isCompleted
           });
         });
       });
@@ -166,7 +178,7 @@
       const listEl = document.getElementById("mkd-mentor-upcoming-list");
       if (!emptyEl || !listEl) return;
 
-      const upcoming = buildMentorUpcomingSessions({ horizonDays: 7 });
+      const upcoming = buildMentorUpcomingSessions({ horizonDays: 7, includePastDays: 7 });
 
       // KPIs
       const todayIso = new Date().toISOString().slice(0, 10);
@@ -198,15 +210,29 @@
             ? d.toLocaleDateString("vi-VN", { weekday: "short", day: "numeric", month: "short" })
             : s.date;
           const studentLabel = s.userEmail || "student";
-          const statusClass =
-            s.status === "learning" ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700";
-          const statusText = s.status === "learning" ? "Đang học" : "Đã đăng ký";
+          const statusClass = s.isCompleted
+            ? "bg-slate-100 text-slate-700"
+            : s.status === "learning"
+              ? "bg-blue-50 text-blue-700"
+              : "bg-emerald-50 text-emerald-700";
+          const statusText = s.isCompleted
+            ? "Hoàn thành"
+            : s.status === "learning"
+              ? "Đang học"
+              : "Đã đăng ký";
           const callHref = `mentor-call.html?courseId=${encodeURIComponent(
             s.courseId || ""
-          )}&session=${encodeURIComponent(String(s.sessionNumber || 1))}`;
+          )}&session=${encodeURIComponent(String(s.sessionNumber || 1))}&userEmail=${encodeURIComponent(
+            s.userEmail || ""
+          )}&userUid=${encodeURIComponent(s.userUid || "")}`;
           const docsHref = `mentor-course.html?courseId=${encodeURIComponent(
             s.courseId || ""
           )}&session=${encodeURIComponent(String(s.sessionNumber || 1))}`;
+          const completedLine = s.completedAt
+            ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate">Hoàn thành lúc: ${new Date(
+                s.completedAt
+              ).toLocaleString("vi-VN")}</p>`
+            : "";
           return `
             <div class="flex items-start justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:border-primary/50 hover:bg-slate-50 transition-colors">
               <div class="min-w-0">
@@ -215,6 +241,7 @@
                   ${dateStr}${s.time ? ` · ${s.time}` : ""} · Buổi ${s.sessionNumber || 1}
                 </p>
                 <p class="text-[11px] text-slate-400 mt-1 truncate">Học viên: ${studentLabel}</p>
+                ${completedLine}
                 ${
                   s.note
                     ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate">Ghi chú: ${String(s.note)

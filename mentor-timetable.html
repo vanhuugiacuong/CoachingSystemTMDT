@@ -145,9 +145,25 @@
         if (!Array.isArray(reg.schedule) || !reg.schedule.length) return;
         const course = getCourseById(reg.courseId) || reg;
         const studentEmail = String(reg.userEmail || "").toLowerCase();
+        const completedMeta =
+          reg && typeof reg.completedSessionsMeta === "object" && reg.completedSessionsMeta
+            ? reg.completedSessionsMeta
+            : {};
+        const completedSessions = Number(reg.completedSessions || 0) || 0;
 
-        reg.schedule.forEach((slot, idx) => {
+        const scheduleSorted = [...reg.schedule]
+          .filter((s) => s?.date)
+          .sort((a, b) => {
+            if (a.date !== b.date) return String(a.date).localeCompare(String(b.date));
+            return String(a.time || "").localeCompare(String(b.time || ""));
+          });
+
+        scheduleSorted.forEach((slot, idx) => {
           if (!slot.date) return;
+          const sessionNumber = idx + 1;
+          const completedAt =
+            completedMeta[String(sessionNumber)] || completedMeta[sessionNumber] || null;
+          const isCompleted = Boolean(completedAt) || sessionNumber <= completedSessions;
           sessions.push({
             userEmail: studentEmail,
             userUid: reg.userUid || "",
@@ -158,7 +174,9 @@
             slotId: slot.slotId || null,
             time: slot.time || "",
             note: slot.note || "",
-            sessionNumber: idx + 1
+            sessionNumber,
+            completedAt: completedAt || null,
+            isCompleted
           });
         });
       });
@@ -313,10 +331,15 @@
             const more = list.length - 1;
             const callHref = `mentor-call.html?courseId=${encodeURIComponent(
               first.courseId || ""
-            )}&session=${encodeURIComponent(String(first.sessionNumber || 1))}`;
+            )}&session=${encodeURIComponent(String(first.sessionNumber || 1))}&userEmail=${encodeURIComponent(
+              first.userEmail || ""
+            )}&userUid=${encodeURIComponent(first.userUid || "")}`;
             const docsHref = `mentor-course.html?courseId=${encodeURIComponent(
               first.courseId || ""
             )}&session=${encodeURIComponent(String(first.sessionNumber || 1))}`;
+            const doneBadge = first.isCompleted
+              ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-slate-100 text-slate-700">Hoàn thành</span>`
+              : "";
 
             td.innerHTML = `
               <div class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left hover:border-primary/50 hover:bg-slate-50 transition-colors">
@@ -324,9 +347,12 @@
                   <p class="text-[12px] font-medium text-slate-900 truncate">${escapeHtml(first.courseTitle)}</p>
                   <p class="mt-0.5 text-[11px] text-slate-500 truncate">HV: ${escapeHtml(first.userEmail || "student")}</p>
                   <div class="mt-2 flex items-center justify-between gap-2">
-                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700">
-                      Buổi ${first.sessionNumber || 1}
-                    </span>
+                    <div class="flex items-center gap-1">
+                      <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700">
+                        Buổi ${first.sessionNumber || 1}
+                      </span>
+                      ${doneBadge}
+                    </div>
                     <div class="flex items-center gap-1">
                       <a href="${docsHref}" class="inline-flex items-center justify-center h-7 px-3 rounded-full border border-slate-200 text-slate-700 text-[11px] font-medium hover:bg-slate-50">
                         Tài liệu

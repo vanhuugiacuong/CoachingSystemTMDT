@@ -136,8 +136,8 @@
             <li>Đặt câu hỏi bất kỳ khi mentor demo.</li>
             <li>Sau buổi học, tổng hợp key points vào ghi chú cá nhân.</li>
           </ul>
-          <a id="mkd-call-back-progress" href="progress-list.html" class="mt-4 inline-flex items-center justify-center w-full h-10 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            Quay lại tiến độ học tập
+          <a id="mkd-call-back-progress" href="mentor-timetable.html" class="mt-4 inline-flex items-center justify-center w-full h-10 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            Quay lại lịch dạy
           </a>
         </div>
       </aside>
@@ -158,14 +158,14 @@
 
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("courseId");
+    const userEmailParam = params.get("userEmail");
+    const userUidParam = params.get("userUid");
     const sessionParam = params.get("session");
     const sessionNumber = Math.max(1, parseInt(sessionParam || "1", 10));
 
     const course = courseId ? getCourseById(courseId) : undefined;
     const lessonHref = `lesson.html?courseId=${encodeURIComponent(courseId || "")}&session=${encodeURIComponent(String(sessionNumber))}`;
-    const progressHref = courseId
-      ? `progress.html?id=${encodeURIComponent(courseId)}`
-      : "progress-list.html";
+    const progressHref = "mentor-timetable.html";
     const docsHref = `mentor-course.html?courseId=${encodeURIComponent(courseId || "")}&session=${encodeURIComponent(String(sessionNumber))}`;
 
     const sessionTitleEl = document.getElementById("mkd-call-session-title");
@@ -280,6 +280,80 @@
       appendUserMessage(`Bạn: ${text}`);
     }
 
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveRegisteredCourses(list) {
+      localStorage.setItem("mkd-registered-courses", JSON.stringify(Array.isArray(list) ? list : []));
+    }
+
+    function normalizeEmail(email) {
+      return String(email || "").trim().toLowerCase();
+    }
+
+    function markSessionCompleted() {
+      const studentEmail = normalizeEmail(userEmailParam);
+      const studentUid = String(userUidParam || "").trim();
+      if (!courseId) return;
+
+      const list = loadRegisteredCourses();
+
+      // 1) Prefer match by uid when available
+      let idx = -1;
+      if (studentUid) {
+        idx = list.findIndex(
+          (r) => String(r?.courseId || "") === String(courseId) && String(r?.userUid || "").trim() === studentUid
+        );
+      }
+
+      // 2) Fallback to email match
+      if (idx === -1 && studentEmail) {
+        idx = list.findIndex(
+          (r) => String(r?.courseId || "") === String(courseId) && normalizeEmail(r?.userEmail) === studentEmail
+        );
+      }
+
+      // 3) Last resort: if only one registration exists for that courseId, use it
+      if (idx === -1) {
+        const matches = list
+          .map((r, i) => ({ r, i }))
+          .filter(({ r }) => String(r?.courseId || "") === String(courseId));
+        if (matches.length === 1) idx = matches[0].i;
+      }
+
+      if (idx === -1) return;
+
+      const nowIso = new Date().toISOString();
+      const current = list[idx];
+      const meta =
+        current && typeof current.completedSessionsMeta === "object" && current.completedSessionsMeta
+          ? { ...current.completedSessionsMeta }
+          : {};
+      meta[String(sessionNumber)] = nowIso;
+
+      const nextCompletedSessions = Math.max(Number(current.completedSessions || 0) || 0, sessionNumber);
+
+      list[idx] = {
+        ...current,
+        status: current.status || "learning",
+        completedSessions: nextCompletedSessions,
+        completedSessionsMeta: meta
+      };
+      saveRegisteredCourses(list);
+
+      if (statusEl) {
+        statusEl.textContent = `Buổi ${sessionNumber} đã hoàn thành · ${new Date(nowIso).toLocaleString("vi-VN")}`;
+      }
+    }
+
     function endCall() {
       if (callState.ended) return;
       callState.ended = true;
@@ -297,6 +371,8 @@
         chatInputEl.disabled = true;
         chatInputEl.placeholder = "Phiên call đã kết thúc";
       }
+
+      markSessionCompleted();
     }
 
     if (micBtn) micBtn.addEventListener("click", toggleMic);
