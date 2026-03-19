@@ -28,6 +28,7 @@ export const ADMIN_EMAILS = [
 // TODO: Dán gmail mentor của bạn vào đây (lowercase)
 export const MENTOR_EMAILS = [
   "vanhuugiacuong174@gmail.com",
+  "phanpanda94@gmail.com"
 ];
 
 export function isAdminEmail(email) {

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch dạy - BCN Coach</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl font-semibold text-slate-900 mb-1">Lịch dạy</h1>
+            <p class="text-sm text-slate-500">
+              Tổng hợp lịch coaching từ lịch học viên đã đặt (theo khóa học).
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <select
+              id="mkd-mentor-timetable-course-filter"
+              class="h-8 rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              <option value="all">Tất cả khóa học</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2.5 text-xs text-slate-600">
+          <div class="flex items-center gap-2">
+            <span class="font-medium text-slate-800">Tuần:</span>
+            <span id="mkd-mentor-timetable-week-range" class="text-slate-600">--/--/---- - --/--/----</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              id="mkd-mentor-timetable-prev-week"
+              class="h-8 rounded-full border border-slate-200 px-3 font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Tuần trước
+            </button>
+            <button
+              type="button"
+              id="mkd-mentor-timetable-today-week"
+              class="h-8 rounded-full border border-slate-900 bg-slate-900 px-3 font-medium text-white hover:bg-slate-800"
+            >
+              Tuần này
+            </button>
+            <button
+              type="button"
+              id="mkd-mentor-timetable-next-week"
+              class="h-8 rounded-full border border-slate-200 px-3 font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Tuần sau
+            </button>
+            <div class="flex items-center gap-1">
+              <span class="text-slate-500">Chọn ngày</span>
+              <input
+                id="mkd-mentor-timetable-date-picker"
+                type="date"
+                class="h-8 rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="mkd-mentor-timetable-content" class="space-y-4">
+      <div
+        id="mkd-mentor-timetable-empty"
+        class="rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500"
+      >
+        Chưa có lịch dạy nào. Khi học viên đặt lịch trong hệ thống, lịch sẽ hiện ở đây.
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 overflow-x-auto hidden" id="mkd-mentor-timetable-grid-wrapper">
+        <table class="min-w-full text-xs">
+          <thead>
+            <tr class="border-b border-slate-100 bg-slate-50">
+              <th class="w-24 px-3 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                Giờ
+              </th>
+            </tr>
+          </thead>
+          <tbody id="mkd-mentor-timetable-grid-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { getCourseById } from "./js/courses-data.js";
+    import { requireMentor } from "./js/session.js";
+
+    renderStudentNavbar("mentor-timetable", { forceMentor: true });
+    renderSiteFooter();
+    await requireMentor({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+
+    const TIME_SLOTS = [
+      { id: "08-10", label: "08:00 - 10:00" },
+      { id: "10-12", label: "10:15 - 12:15" },
+      { id: "13-15", label: "13:15 - 15:15" },
+      { id: "15-17", label: "15:30 - 17:30" },
+      { id: "17-19", label: "17:45 - 19:45" },
+      { id: "20-22", label: "20:00 - 22:00" }
+    ];
+
+    const WEEKDAY_NAMES = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+
+    function loadRegisteredCourses() {
+      try {
+        const raw = localStorage.getItem("mkd-registered-courses");
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn("Cannot read registered courses", e);
+        return [];
+      }
+    }
+
+    function buildSessions() {
+      const registrations = loadRegisteredCourses();
+      const sessions = [];
+
+      registrations.forEach((reg) => {
+        if (!Array.isArray(reg.schedule) || !reg.schedule.length) return;
+        const course = getCourseById(reg.courseId) || reg;
+        const studentEmail = String(reg.userEmail || "").toLowerCase();
+
+        reg.schedule.forEach((slot, idx) => {
+          if (!slot.date) return;
+          sessions.push({
+            userEmail: studentEmail,
+            userUid: reg.userUid || "",
+            courseId: reg.courseId,
+            courseTitle: course.title || "Khóa học",
+            status: reg.status || "registered",
+            date: slot.date,
+            slotId: slot.slotId || null,
+            time: slot.time || "",
+            note: slot.note || "",
+            sessionNumber: idx + 1
+          });
+        });
+      });
+
+      return sessions;
+    }
+
+    function getStartOfWeek(date) {
+      const d = new Date(date);
+      const day = d.getDay(); // 0 = CN
+      const diff = d.getDate() - day; // start from CN
+      const start = new Date(d);
+      start.setDate(diff);
+      start.setHours(0, 0, 0, 0);
+      return start;
+    }
+
+    function formatWeekRange(start) {
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      const fmt = (d) => d.toLocaleDateString("vi-VN");
+      return `${fmt(start)} - ${fmt(end)}`;
+    }
+
+    function escapeHtml(input) {
+      return String(input || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    let currentDate = new Date();
+
+    function ensureHeaderDays(gridWrapper, days) {
+      const headerRow = gridWrapper.querySelector("thead tr");
+      if (!headerRow) return;
+      while (headerRow.children.length > 1) {
+        headerRow.removeChild(headerRow.lastElementChild);
+      }
+      days.forEach((day) => {
+        const th = document.createElement("th");
+        th.className =
+          "px-3 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide";
+        const isToday = new Date().toISOString().slice(0, 10) === day.iso;
+        th.innerHTML = `
+          <div class="flex flex-col">
+            <span class="${isToday ? "text-primary" : "text-slate-500"}">${WEEKDAY_NAMES[day.date.getDay()]}</span>
+            <span class="text-slate-900 font-semibold">${day.date
+              .getDate()
+              .toString()
+              .padStart(2, "0")}/${(day.date.getMonth() + 1)
+              .toString()
+              .padStart(2, "0")}</span>
+          </div>
+        `;
+        headerRow.appendChild(th);
+      });
+    }
+
+    function renderMentorTimetable() {
+      const emptyEl = document.getElementById("mkd-mentor-timetable-empty");
+      const gridWrapper = document.getElementById("mkd-mentor-timetable-grid-wrapper");
+      const gridBody = document.getElementById("mkd-mentor-timetable-grid-body");
+      const weekRangeEl = document.getElementById("mkd-mentor-timetable-week-range");
+      const filterSelect = document.getElementById("mkd-mentor-timetable-course-filter");
+      const datePicker = document.getElementById("mkd-mentor-timetable-date-picker");
+      if (!emptyEl || !gridWrapper || !gridBody || !weekRangeEl || !filterSelect) return;
+
+      const allSessions = buildSessions();
+
+      // setup filter options (unique courses)
+      const uniqueCourses = new Map();
+      allSessions.forEach((s) => {
+        if (!uniqueCourses.has(s.courseId)) uniqueCourses.set(s.courseId, s.courseTitle);
+      });
+      if (filterSelect.options.length === 1) {
+        uniqueCourses.forEach((title, id) => {
+          const opt = document.createElement("option");
+          opt.value = id;
+          opt.textContent = title;
+          filterSelect.appendChild(opt);
+        });
+      }
+
+      const selectedCourseId = filterSelect.value;
+      const filteredSessions =
+        selectedCourseId === "all" ? allSessions : allSessions.filter((s) => s.courseId === selectedCourseId);
+
+      const startOfWeek = getStartOfWeek(currentDate);
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        const iso = d.toISOString().slice(0, 10);
+        days.push({ date: d, iso });
+      }
+
+      weekRangeEl.textContent = formatWeekRange(startOfWeek);
+      if (datePicker) datePicker.value = currentDate.toISOString().slice(0, 10);
+
+      if (!filteredSessions.length) {
+        emptyEl.classList.remove("hidden");
+        gridWrapper.classList.add("hidden");
+        gridBody.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      gridWrapper.classList.remove("hidden");
+
+      // Map sessions by day+slot (mentor can have multiple per slot)
+      const sessionMap = new Map();
+      filteredSessions.forEach((s) => {
+        const keyBase = s.date;
+        let slotId = s.slotId;
+        if (!slotId) {
+          const found = TIME_SLOTS.find((t) => t.label === s.time);
+          slotId = found ? found.id : null;
+        }
+        if (!slotId) return;
+        const key = `${keyBase}|${slotId}`;
+        const list = sessionMap.get(key) || [];
+        list.push(s);
+        sessionMap.set(key, list);
+      });
+
+      ensureHeaderDays(gridWrapper, days);
+
+      gridBody.innerHTML = "";
+      TIME_SLOTS.forEach((slot) => {
+        const tr = document.createElement("tr");
+        tr.className = "border-t border-slate-100";
+
+        const timeCell = document.createElement("td");
+        timeCell.className =
+          "px-3 py-3 align-top text-[11px] font-medium text-slate-500 whitespace-nowrap";
+        timeCell.textContent = slot.label;
+        tr.appendChild(timeCell);
+
+        days.forEach((day) => {
+          const key = `${day.iso}|${slot.id}`;
+          const list = sessionMap.get(key) || [];
+          const td = document.createElement("td");
+          td.className = "px-1 py-2 align-top";
+
+          if (!list.length) {
+            td.innerHTML = `
+              <div class="w-full h-16 sm:h-20 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-2.5 py-2 text-left flex flex-col justify-center">
+                <span class="text-[11px] text-slate-400">Trống</span>
+                <span class="mt-0.5 text-[10px] text-slate-400">${slot.label}</span>
+              </div>
+            `;
+          } else {
+            const first = list[0];
+            const more = list.length - 1;
+            const callHref = `mentor-call.html?courseId=${encodeURIComponent(
+              first.courseId || ""
+            )}&session=${encodeURIComponent(String(first.sessionNumber || 1))}`;
+            const docsHref = `mentor-course.html?courseId=${encodeURIComponent(
+              first.courseId || ""
+            )}&session=${encodeURIComponent(String(first.sessionNumber || 1))}`;
+
+            td.innerHTML = `
+              <div class="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-left hover:border-primary/50 hover:bg-slate-50 transition-colors">
+                <div class="min-w-0">
+                  <p class="text-[12px] font-medium text-slate-900 truncate">${escapeHtml(first.courseTitle)}</p>
+                  <p class="mt-0.5 text-[11px] text-slate-500 truncate">HV: ${escapeHtml(first.userEmail || "student")}</p>
+                  <div class="mt-2 flex items-center justify-between gap-2">
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700">
+                      Buổi ${first.sessionNumber || 1}
+                    </span>
+                    <div class="flex items-center gap-1">
+                      <a href="${docsHref}" class="inline-flex items-center justify-center h-7 px-3 rounded-full border border-slate-200 text-slate-700 text-[11px] font-medium hover:bg-slate-50">
+                        Tài liệu
+                      </a>
+                      <a href="${callHref}" class="inline-flex items-center justify-center h-7 px-3 rounded-full bg-slate-900 text-white text-[11px] font-medium hover:bg-slate-800">
+                        Vào phòng
+                      </a>
+                    </div>
+                  </div>
+                  ${more > 0 ? `<p class="mt-1 text-[10px] text-slate-400">+${more} lịch khác</p>` : ""}
+                </div>
+              </div>
+            `;
+          }
+
+          tr.appendChild(td);
+        });
+
+        gridBody.appendChild(tr);
+      });
+    }
+
+    const filterSelectEl = document.getElementById("mkd-mentor-timetable-course-filter");
+    const prevWeekBtn = document.getElementById("mkd-mentor-timetable-prev-week");
+    const nextWeekBtn = document.getElementById("mkd-mentor-timetable-next-week");
+    const todayWeekBtn = document.getElementById("mkd-mentor-timetable-today-week");
+    const datePickerEl = document.getElementById("mkd-mentor-timetable-date-picker");
+
+    if (filterSelectEl) filterSelectEl.addEventListener("change", () => renderMentorTimetable());
+    if (prevWeekBtn) prevWeekBtn.addEventListener("click", () => {
+      currentDate.setDate(currentDate.getDate() - 7);
+      renderMentorTimetable();
+    });
+    if (nextWeekBtn) nextWeekBtn.addEventListener("click", () => {
+      currentDate.setDate(currentDate.getDate() + 7);
+      renderMentorTimetable();
+    });
+    if (todayWeekBtn) todayWeekBtn.addEventListener("click", () => {
+      currentDate = new Date();
+      renderMentorTimetable();
+    });
+    if (datePickerEl) datePickerEl.addEventListener("change", () => {
+      const val = datePickerEl.value;
+      if (!val) return;
+      currentDate = new Date(val);
+      renderMentorTimetable();
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      currentDate = new Date();
+      renderMentorTimetable();
+    });
+  </script>
+</body>
+</html>
+

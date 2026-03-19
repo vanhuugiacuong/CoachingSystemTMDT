@@ -40,7 +40,11 @@ export function renderStudentNavbar(active, options = {}) {
   const container = document.getElementById("mkd-navbar");
   if (!container) return;
 
-  const isAdmin = Boolean(options.forceAdmin);
+  const role = options.forceAdmin
+    ? "admin"
+    : options.forceMentor
+      ? "mentor"
+      : "student";
 
   const linkBase =
     "inline-flex items-center h-10 px-4 text-sm font-medium rounded-full transition-colors";
@@ -63,7 +67,16 @@ export function renderStudentNavbar(active, options = {}) {
     { id: "admin-mentors", label: "Mentors", href: "admin-mentors.html" }
   ];
 
-  const tabs = isAdmin ? adminTabs : studentTabs;
+  const mentorTabs = [
+    { id: "mentor-dashboard", label: "Dashboard", href: "mentor-dashboard.html" },
+    { id: "mentor-timetable", label: "Lịch dạy", href: "mentor-timetable.html" },
+    { id: "mentor-inbox", label: "Tin nhắn", href: "mentor-inbox.html" },
+    { id: "mentor-courses", label: "Tài liệu", href: "mentor-courses.html" },
+    { id: "mentor-call", label: "Coaching", href: "mentor-call.html" }
+  ];
+
+  const tabs =
+    role === "admin" ? adminTabs : role === "mentor" ? mentorTabs : studentTabs;
 
   container.innerHTML = `
     <header class="w-full border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -97,10 +110,10 @@ export function renderStudentNavbar(active, options = {}) {
           </nav>
 
           <div class="flex items-center gap-3">
-            <a href="${isAdmin ? "admin-dashboard.html" : "profile.html"}" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <a href="${role === "admin" ? "admin-dashboard.html" : "profile.html"}" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
               <div class="hidden sm:flex flex-col items-end">
                 <span class="text-xs font-medium text-slate-900" id="mkd-user-email">Student</span>
-                <span class="text-[11px] text-slate-500">${isAdmin ? "Admin" : "Học viên"}</span>
+                <span class="text-[11px] text-slate-500">${role === "admin" ? "Admin" : role === "mentor" ? "Giảng viên" : "Học viên"}</span>
               </div>
               <div class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold">
                 <span id="mkd-user-initial">C</span>

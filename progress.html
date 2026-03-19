@@ -655,19 +655,6 @@
 
       messageInput.value = "";
 
-      // Simulate mentor reply sau 2 giây
-      setTimeout(() => {
-        const mentorMsg = document.createElement("div");
-        mentorMsg.className = "flex justify-start mb-3";
-        mentorMsg.innerHTML = `
-          <div class="max-w-xs bg-slate-200 text-slate-900 rounded-lg px-4 py-2 text-sm">
-            Cảm ơn bạn đã gửi tin nhắn! Mentor sẽ trả lời bạn trong chốc lát. 🙂
-          </div>
-        `;
-        messagesContainer.appendChild(mentorMsg);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }, 2000);
-
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 

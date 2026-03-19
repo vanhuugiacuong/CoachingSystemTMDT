@@ -40,6 +40,15 @@
           </p>
           <h1 class="text-2xl sm:text-3xl font-bold text-slate-900">Phòng coaching với mentor</h1>
           <p id="mkd-call-session-title" class="text-sm text-slate-600 mt-2">Đang tải thông tin buổi học...</p>
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <a
+              id="mkd-call-course-docs"
+              href="mentor-course.html"
+              class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Tài liệu khóa học
+            </a>
+          </div>
         </div>
 
         <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3 min-w-[220px]">
@@ -140,9 +149,12 @@
   <script type="module">
     import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
     import { getCourseById } from "./js/courses-data.js";
+    import { requireMentor } from "./js/session.js";
 
-    renderStudentNavbar("courses");
+    renderStudentNavbar("mentor-call", { forceMentor: true });
     renderSiteFooter();
+
+    await requireMentor({ redirectTo: "auth.html", denyTo: "dashboard.html" });
 
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("courseId");
@@ -154,6 +166,7 @@
     const progressHref = courseId
       ? `progress.html?id=${encodeURIComponent(courseId)}`
       : "progress-list.html";
+    const docsHref = `mentor-course.html?courseId=${encodeURIComponent(courseId || "")}&session=${encodeURIComponent(String(sessionNumber))}`;
 
     const sessionTitleEl = document.getElementById("mkd-call-session-title");
     const statusEl = document.getElementById("mkd-call-status");
@@ -162,9 +175,11 @@
 
     const backLessonEl = document.getElementById("mkd-call-back-lesson");
     const backProgressEl = document.getElementById("mkd-call-back-progress");
+    const docsEl = document.getElementById("mkd-call-course-docs");
 
     if (backLessonEl) backLessonEl.href = lessonHref;
     if (backProgressEl) backProgressEl.href = progressHref;
+    if (docsEl) docsEl.href = docsHref;
 
     const sessionLabel = `Buổi ${sessionNumber}`;
     if (sessionTitleEl) {

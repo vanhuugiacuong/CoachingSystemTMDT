@@ -37,28 +37,41 @@
 
     <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tin nhắn (7 ngày)</p>
-        <p id="mkd-mentor-kpi-chats" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
-        <p class="mt-1 text-xs text-slate-500">Nguồn: `mkd-mentor-chats`.</p>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Buổi coaching hôm nay</p>
+        <p id="mkd-mentor-kpi-today" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+        <p class="mt-1 text-xs text-slate-500">Tính theo lịch học viên đã đặt.</p>
       </div>
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Học viên nhắn</p>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">7 ngày tới</p>
+        <p id="mkd-mentor-kpi-week" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
+        <p class="mt-1 text-xs text-slate-500">Sắp xếp theo ngày và khung giờ.</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Học viên có lịch</p>
         <p id="mkd-mentor-kpi-students" class="mt-2 text-2xl font-semibold text-slate-900">0</p>
-        <p class="mt-1 text-xs text-slate-500">Đếm theo `userEmail`.</p>
-      </div>
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Gợi ý</p>
-        <p class="mt-2 text-sm text-slate-700">
-          Có thể mở rộng để mentor xem danh sách chat theo học viên / theo khóa.
-        </p>
+        <p class="mt-1 text-xs text-slate-500">Đếm theo `userEmail` trong đăng ký.</p>
       </div>
     </section>
 
     <section class="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
-      <div class="px-6 py-4 border-b border-slate-100">
-        <h2 class="text-sm font-semibold text-slate-900">Tin nhắn gần đây</h2>
+      <div class="px-6 py-4 border-b border-slate-100 flex items-start justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Lịch coaching sắp tới</h2>
+          <p class="text-xs text-slate-500 mt-1">Nguồn: `mkd-registered-courses` → `schedule[]`.</p>
+        </div>
+        <a
+          href="mentor-timetable.html"
+          class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Xem thời khóa biểu
+        </a>
       </div>
-      <div id="mkd-mentor-chat-list" class="px-6 py-4 space-y-2 text-sm text-slate-700"></div>
+      <div class="px-6 py-4">
+        <div id="mkd-mentor-upcoming-empty" class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+          Chưa có buổi coaching nào được đặt. Học viên có thể đặt lịch trong trang Thời khóa biểu.
+        </div>
+        <div id="mkd-mentor-upcoming-list" class="hidden space-y-2"></div>
+      </div>
     </section>
   </main>
 
@@ -67,78 +80,173 @@
   <script type="module">
     import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
     import { requireMentor } from "./js/session.js";
+    import { getCourseById } from "./js/courses-data.js";
 
-    renderStudentNavbar("dashboard");
+    renderStudentNavbar("mentor-dashboard", { forceMentor: true });
     renderSiteFooter();
 
     await requireMentor({ redirectTo: "auth.html", denyTo: "dashboard.html" });
 
-    function toDayKey(dateLike) {
-      const d = new Date(dateLike);
-      if (Number.isNaN(d.getTime())) return null;
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}`;
-    }
-
-    function lastNDaysKeys(days) {
-      const out = [];
-      const now = new Date();
-      for (let i = days - 1; i >= 0; i--) {
-        const d = new Date(now);
-        d.setDate(now.getDate() - i);
-        out.push(toDayKey(d));
-      }
-      return out.filter(Boolean);
-    }
-
-    function loadChats() {
+    function loadRegisteredCourses() {
       try {
-        const raw = localStorage.getItem("mkd-mentor-chats");
+        const raw = localStorage.getItem("mkd-registered-courses");
         if (!raw) return [];
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
-      } catch {
+      } catch (e) {
+        console.warn("Cannot read registered courses", e);
         return [];
       }
     }
 
-    const days = lastNDaysKeys(7);
-    const chats = loadChats();
-    const recent = chats.filter((c) => {
-      const k = toDayKey(c?.timestamp);
-      return k && days.includes(k);
-    });
+    function parseIsoDate(dateIso) {
+      if (!dateIso) return null;
+      const d = new Date(dateIso);
+      if (Number.isNaN(d.getTime())) return null;
+      return d;
+    }
 
-    const uniqueStudents = new Set(
-      recent.map((c) => String(c?.userEmail || "").toLowerCase()).filter(Boolean)
-    );
+    function addDays(date, days) {
+      const d = new Date(date);
+      d.setDate(d.getDate() + days);
+      return d;
+    }
 
-    const chatsKpi = document.getElementById("mkd-mentor-kpi-chats");
-    const studentsKpi = document.getElementById("mkd-mentor-kpi-students");
-    if (chatsKpi) chatsKpi.textContent = String(recent.length);
-    if (studentsKpi) studentsKpi.textContent = String(uniqueStudents.size);
+    function isoKey(date) {
+      return new Date(date).toISOString().slice(0, 10);
+    }
 
-    const listEl = document.getElementById("mkd-mentor-chat-list");
-    if (listEl) {
-      const rows = recent
-        .slice(-15)
-        .reverse()
-        .map((c) => {
-          const ts = c?.timestamp ? new Date(c.timestamp).toLocaleString("vi-VN") : "";
-          const email = c?.userEmail || "student";
-          const msg = c?.message || "";
+    function buildMentorUpcomingSessions({ horizonDays = 7 } = {}) {
+      const regs = loadRegisteredCourses();
+      const now = new Date();
+      const todayIso = isoKey(now);
+      const endIso = isoKey(addDays(now, horizonDays));
+      const sessions = [];
+
+      regs.forEach((reg) => {
+        if (!Array.isArray(reg.schedule) || !reg.schedule.length) return;
+
+        const userEmail = String(reg.userEmail || "").toLowerCase();
+        const course = getCourseById(reg.courseId) || reg;
+        const scheduleSorted = [...reg.schedule]
+          .filter((s) => s?.date)
+          .sort((a, b) => {
+            if (a.date !== b.date) return String(a.date).localeCompare(String(b.date));
+            return String(a.time || "").localeCompare(String(b.time || ""));
+          });
+
+        scheduleSorted.forEach((slot, idx) => {
+          if (!slot.date) return;
+          // only keep from today -> horizon
+          if (slot.date < todayIso || slot.date > endIso) return;
+          sessions.push({
+            userEmail,
+            userUid: reg.userUid || "",
+            courseId: reg.courseId,
+            courseTitle: course.title || "Khóa học",
+            status: reg.status || "registered",
+            date: slot.date,
+            time: slot.time || "",
+            note: slot.note || "",
+            sessionNumber: idx + 1
+          });
+        });
+      });
+
+      sessions.sort((a, b) => {
+        if (a.date !== b.date) return a.date.localeCompare(b.date);
+        return (a.time || "").localeCompare(b.time || "");
+      });
+
+      return sessions;
+    }
+
+    function renderMentorUpcoming() {
+      const emptyEl = document.getElementById("mkd-mentor-upcoming-empty");
+      const listEl = document.getElementById("mkd-mentor-upcoming-list");
+      if (!emptyEl || !listEl) return;
+
+      const upcoming = buildMentorUpcomingSessions({ horizonDays: 7 });
+
+      // KPIs
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const todayCount = upcoming.filter((s) => s.date === todayIso).length;
+      const uniqueStudents = new Set(upcoming.map((s) => s.userEmail).filter(Boolean));
+
+      const kpiTodayEl = document.getElementById("mkd-mentor-kpi-today");
+      const kpiWeekEl = document.getElementById("mkd-mentor-kpi-week");
+      const kpiStudentsEl = document.getElementById("mkd-mentor-kpi-students");
+      if (kpiTodayEl) kpiTodayEl.textContent = String(todayCount);
+      if (kpiWeekEl) kpiWeekEl.textContent = String(upcoming.length);
+      if (kpiStudentsEl) kpiStudentsEl.textContent = String(uniqueStudents.size);
+
+      if (!upcoming.length) {
+        emptyEl.classList.remove("hidden");
+        listEl.classList.add("hidden");
+        listEl.innerHTML = "";
+        return;
+      }
+
+      emptyEl.classList.add("hidden");
+      listEl.classList.remove("hidden");
+
+      listEl.innerHTML = upcoming
+        .slice(0, 20)
+        .map((s) => {
+          const d = parseIsoDate(s.date);
+          const dateStr = d
+            ? d.toLocaleDateString("vi-VN", { weekday: "short", day: "numeric", month: "short" })
+            : s.date;
+          const studentLabel = s.userEmail || "student";
+          const statusClass =
+            s.status === "learning" ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700";
+          const statusText = s.status === "learning" ? "Đang học" : "Đã đăng ký";
+          const callHref = `mentor-call.html?courseId=${encodeURIComponent(
+            s.courseId || ""
+          )}&session=${encodeURIComponent(String(s.sessionNumber || 1))}`;
+          const docsHref = `mentor-course.html?courseId=${encodeURIComponent(
+            s.courseId || ""
+          )}&session=${encodeURIComponent(String(s.sessionNumber || 1))}`;
           return `
-            <div class="rounded-xl border border-slate-200 px-4 py-3">
-              <p class="text-xs text-slate-500">${email}${ts ? ` · ${ts}` : ""}</p>
-              <p class="mt-1">${String(msg).replaceAll("<", "&lt;").replaceAll(">", "&gt;")}</p>
+            <div class="flex items-start justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3 hover:border-primary/50 hover:bg-slate-50 transition-colors">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-900 truncate">${s.courseTitle}</p>
+                <p class="text-xs text-slate-500 mt-1">
+                  ${dateStr}${s.time ? ` · ${s.time}` : ""} · Buổi ${s.sessionNumber || 1}
+                </p>
+                <p class="text-[11px] text-slate-400 mt-1 truncate">Học viên: ${studentLabel}</p>
+                ${
+                  s.note
+                    ? `<p class="text-[11px] text-slate-400 mt-0.5 truncate">Ghi chú: ${String(s.note)
+                        .replaceAll("<", "&lt;")
+                        .replaceAll(">", "&gt;")}</p>`
+                    : ""
+                }
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${statusClass}">
+                  ${statusText}
+                </span>
+                <a
+                  href="${docsHref}"
+                  class="shrink-0 inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Tài liệu
+                </a>
+                <a
+                  href="${callHref}"
+                  class="shrink-0 inline-flex items-center justify-center h-9 px-4 rounded-full bg-slate-900 text-white text-xs font-medium hover:bg-slate-800"
+                >
+                  Vào phòng
+                </a>
+              </div>
             </div>
           `;
         })
         .join("");
-      listEl.innerHTML = rows || '<p class="text-sm text-slate-500">Chưa có tin nhắn nào.</p>';
     }
+
+    renderMentorUpcoming();
   </script>
 </body>
 </html>

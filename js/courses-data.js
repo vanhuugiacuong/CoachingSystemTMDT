@@ -16,6 +16,18 @@ export const courses = [
         "Trong 7 buổi, bạn sẽ tối ưu CV, luyện thuật toán/DSA vừa đủ, cải thiện dự án cá nhân, chuẩn bị behavioral interview và hệ thống hóa kiến thức nền tảng.",
         "Mentor đồng hành review CV, mock interview, góp ý portfolio và kế hoạch ứng tuyển."
       ],
+      resources: [
+        {
+          title: "Template CV (Google Docs)",
+          type: "doc",
+          url: "https://docs.google.com/"
+        },
+        {
+          title: "Checklist phỏng vấn (Notion)",
+          type: "link",
+          url: "https://www.notion.so/"
+        }
+      ],
       syllabusTitle: "Chương trình học",
       syllabusItems: [
         "Buổi 1: Đánh giá năng lực, mục tiêu, roadmap 2K.",
@@ -25,7 +37,23 @@ export const courses = [
         "Buổi 5: Mock interview (technical).",
         "Buổi 6: Mock interview (behavioral) + case study.",
         "Buổi 7: Chiến lược ứng tuyển & follow-up."
-      ]
+      ],
+      sessionResources: {
+        "1": [
+          {
+            title: "Form đánh giá năng lực đầu vào",
+            type: "form",
+            url: "https://forms.gle/"
+          }
+        ],
+        "5": [
+          {
+            title: "Bộ câu hỏi mock interview (technical)",
+            type: "doc",
+            url: "https://docs.google.com/"
+          }
+        ]
+      }
     },
     meta: {
       delivery: "Linh hoạt tuỳ ý",

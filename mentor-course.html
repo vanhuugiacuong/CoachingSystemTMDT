@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài liệu khóa học - BCN Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <nav class="mb-5 text-xs text-slate-500" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-1">
+        <li><a href="mentor-dashboard.html" class="hover:text-slate-700">Dashboard</a></li>
+        <li><span class="mx-1">/</span></li>
+        <li><a href="mentor-timetable.html" class="hover:text-slate-700">Lịch dạy</a></li>
+        <li><span class="mx-1">/</span></li>
+        <li class="text-slate-700 font-medium">Tài liệu khóa học</li>
+      </ol>
+    </nav>
+
+    <header class="mb-6">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div class="min-w-0">
+          <h1 id="mkd-mentor-course-title" class="text-2xl font-semibold text-slate-900 truncate">
+            Tài liệu khóa học
+          </h1>
+          <p id="mkd-mentor-course-subtitle" class="text-sm text-slate-500 mt-1">
+            --
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <a
+            id="mkd-mentor-course-join"
+            href="mentor-call.html"
+            class="inline-flex items-center justify-center h-9 px-4 rounded-full bg-slate-900 text-white text-xs font-medium hover:bg-slate-800"
+          >
+            Vào phòng (buổi đang chọn)
+          </a>
+          <a
+            id="mkd-mentor-course-back"
+            href="mentor-timetable.html"
+            class="inline-flex items-center justify-center h-9 px-4 rounded-full border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Quay lại lịch
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid gap-5 lg:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
+      <article class="space-y-5">
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Tổng quan</h2>
+              <p class="text-xs text-slate-500 mt-1">Mô tả nhanh để mentor nắm context.</p>
+            </div>
+          </div>
+          <div id="mkd-mentor-course-overview" class="mt-4 space-y-3 text-sm text-slate-700"></div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-900">Chương trình</h2>
+              <p class="text-xs text-slate-500 mt-1">Chọn buổi để xem mục tiêu & tài liệu liên quan.</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <label for="mkd-mentor-course-session" class="text-slate-500">Buổi</label>
+              <select
+                id="mkd-mentor-course-session"
+                class="h-8 rounded-full border border-slate-200 bg-white px-3 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              ></select>
+            </div>
+          </div>
+
+          <ol id="mkd-mentor-course-syllabus" class="mt-4 space-y-2 text-sm text-slate-700"></ol>
+        </div>
+      </article>
+
+      <aside class="space-y-5">
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+          <h2 class="text-sm font-semibold text-slate-900">Tài liệu (khóa học)</h2>
+          <p class="text-xs text-slate-500 mt-1">Các link dùng chung cho toàn khóa.</p>
+          <div id="mkd-mentor-course-resources" class="mt-4 space-y-2"></div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+          <h2 class="text-sm font-semibold text-slate-900">Tài liệu (buổi đang chọn)</h2>
+          <p class="text-xs text-slate-500 mt-1">Checklist/link phục vụ đúng buổi.</p>
+          <div id="mkd-mentor-course-session-resources" class="mt-4 space-y-2"></div>
+        </div>
+      </aside>
+    </section>
+
+    <div id="mkd-mentor-course-not-found" class="hidden mt-10 rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+      Không tìm thấy khóa học. Vui lòng quay lại lịch dạy.
+    </div>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { requireMentor } from "./js/session.js";
+    import { getCourseById } from "./js/courses-data.js";
+
+    renderStudentNavbar("mentor-courses", { forceMentor: true });
+    renderSiteFooter();
+    await requireMentor({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("courseId") || "";
+    const sessionParam = params.get("session");
+    const initialSession = Math.max(1, parseInt(sessionParam || "1", 10));
+
+    const course = courseId ? getCourseById(courseId) : undefined;
+    const notFoundEl = document.getElementById("mkd-mentor-course-not-found");
+    if (!course) {
+      if (notFoundEl) notFoundEl.classList.remove("hidden");
+    }
+
+    function escapeHtml(input) {
+      return String(input || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
+
+    function asResourceList(raw) {
+      if (!Array.isArray(raw)) return [];
+      return raw
+        .map((r) => ({
+          title: r?.title || "",
+          url: r?.url || "",
+          type: r?.type || "link"
+        }))
+        .filter((r) => r.title && r.url);
+    }
+
+    function getCourseResources(c) {
+      return asResourceList(c?.detail?.resources);
+    }
+
+    function getSessionResources(c, sessionNumber) {
+      const map = c?.detail?.sessionResources || {};
+      const raw = map[String(sessionNumber)] || map[sessionNumber] || [];
+      return asResourceList(raw);
+    }
+
+    function renderResources(container, items) {
+      if (!container) return;
+      if (!items.length) {
+        container.innerHTML =
+          '<div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">Chưa có tài liệu nào.</div>';
+        return;
+      }
+      container.innerHTML = items
+        .map((r) => {
+          return `
+            <a
+              href="${escapeHtml(r.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-primary/50 hover:bg-slate-50 transition-colors"
+            >
+              <div class="h-8 w-8 rounded-xl bg-slate-900 text-white flex items-center justify-center text-xs font-semibold shrink-0">
+                ${escapeHtml((r.type || "link").toUpperCase().slice(0, 2))}
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-900 truncate">${escapeHtml(r.title)}</p>
+                <p class="text-[11px] text-slate-500 truncate mt-0.5">${escapeHtml(r.url)}</p>
+              </div>
+            </a>
+          `;
+        })
+        .join("");
+    }
+
+    function renderCourse() {
+      if (!course) return;
+      const titleEl = document.getElementById("mkd-mentor-course-title");
+      const subtitleEl = document.getElementById("mkd-mentor-course-subtitle");
+      const overviewEl = document.getElementById("mkd-mentor-course-overview");
+      const syllabusEl = document.getElementById("mkd-mentor-course-syllabus");
+      const sessionSelect = document.getElementById("mkd-mentor-course-session");
+      const resourcesEl = document.getElementById("mkd-mentor-course-resources");
+      const sessionResourcesEl = document.getElementById("mkd-mentor-course-session-resources");
+      const joinEl = document.getElementById("mkd-mentor-course-join");
+
+      const totalSessions = Math.max(1, course.sessions || (course.detail?.syllabusItems || []).length || 1);
+      const currentSession = Math.min(totalSessions, Math.max(1, selectedSession));
+
+      document.title = `Tài liệu - ${course.title || "Khóa học"} - BCN Coach`;
+      if (titleEl) titleEl.textContent = course.title || "Khóa học";
+      if (subtitleEl) subtitleEl.textContent = `Course ID: ${courseId} · Tổng ${totalSessions} buổi`;
+
+      // Overview
+      const paragraphs = course.detail?.overviewParagraphs || [];
+      if (overviewEl) {
+        overviewEl.innerHTML = paragraphs.length
+          ? paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("")
+          : '<p class="text-slate-500">Chưa có mô tả.</p>';
+      }
+
+      // Session selector
+      if (sessionSelect) {
+        sessionSelect.innerHTML = "";
+        for (let i = 1; i <= totalSessions; i++) {
+          const opt = document.createElement("option");
+          opt.value = String(i);
+          opt.textContent = `Buổi ${i}`;
+          if (i === currentSession) opt.selected = true;
+          sessionSelect.appendChild(opt);
+        }
+      }
+
+      // Syllabus list + highlight current
+      const syllabusItems = course.detail?.syllabusItems || [];
+      if (syllabusEl) {
+        syllabusEl.innerHTML = (syllabusItems.length ? syllabusItems : Array.from({ length: totalSessions }, (_, i) => `Buổi ${i + 1}`))
+          .slice(0, totalSessions)
+          .map((line, idx) => {
+            const n = idx + 1;
+            const isActive = n === currentSession;
+            return `
+              <li class="rounded-xl border ${isActive ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 bg-white"} px-4 py-3">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold truncate">${escapeHtml(line)}</p>
+                    <p class="text-[11px] ${isActive ? "text-slate-200" : "text-slate-500"} mt-1">Buổi ${n}</p>
+                  </div>
+                  <a
+                    href="mentor-call.html?courseId=${encodeURIComponent(courseId)}&session=${encodeURIComponent(String(n))}"
+                    class="shrink-0 inline-flex items-center justify-center h-8 px-3 rounded-full ${isActive ? "bg-white text-slate-900" : "border border-slate-200 text-slate-700 hover:bg-slate-50"} text-xs font-medium"
+                  >
+                    Vào phòng
+                  </a>
+                </div>
+              </li>
+            `;
+          })
+          .join("");
+      }
+
+      // Resources
+      renderResources(resourcesEl, getCourseResources(course));
+      renderResources(sessionResourcesEl, getSessionResources(course, currentSession));
+
+      if (joinEl) {
+        joinEl.href = `mentor-call.html?courseId=${encodeURIComponent(courseId)}&session=${encodeURIComponent(String(currentSession))}`;
+      }
+    }
+
+    let selectedSession = initialSession;
+    renderCourse();
+
+    const sessionSelect = document.getElementById("mkd-mentor-course-session");
+    if (sessionSelect) {
+      sessionSelect.addEventListener("change", () => {
+        const next = Math.max(1, parseInt(sessionSelect.value || "1", 10));
+        selectedSession = next;
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("courseId", courseId);
+        nextUrl.searchParams.set("session", String(next));
+        window.history.replaceState({}, "", nextUrl.toString());
+        renderCourse();
+      });
+    }
+  </script>
+</body>
+</html>
+

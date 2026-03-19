@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài liệu - BCN Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: "#2563eb", soft: "#60a5fa" }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-50 flex flex-col">
+  <div id="mkd-navbar"></div>
+
+  <main class="flex-1 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12 w-full">
+    <header class="mb-6">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900">Tài liệu khóa học</h1>
+          <p class="text-sm text-slate-500 mt-1">
+            Chọn một khóa học để xem syllabus và tài liệu theo từng buổi.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div id="mkd-mentor-courses-empty" class="hidden rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
+        Chưa có khóa học nào.
+      </div>
+      <div id="mkd-mentor-courses-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+  </main>
+
+  <div id="mkd-footer"></div>
+
+  <script type="module">
+    import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
+    import { requireMentor } from "./js/session.js";
+    import { getCourses } from "./js/courses-data.js";
+
+    renderStudentNavbar("mentor-courses", { forceMentor: true });
+    renderSiteFooter();
+    await requireMentor({ redirectTo: "auth.html", denyTo: "dashboard.html" });
+
+    const gridEl = document.getElementById("mkd-mentor-courses-grid");
+    const emptyEl = document.getElementById("mkd-mentor-courses-empty");
+    if (!gridEl || !emptyEl) {
+      // nothing to render
+    } else {
+      const list = getCourses({ includeHidden: true }) || [];
+      if (!list.length) {
+        emptyEl.classList.remove("hidden");
+      } else {
+        emptyEl.classList.add("hidden");
+        gridEl.innerHTML = list
+          .map((c) => {
+            const href = `mentor-course.html?courseId=${encodeURIComponent(c.id || "")}&session=1`;
+            const sessions = c.sessions || (c.detail?.syllabusItems || []).length || 0;
+            return `
+              <a href="${href}" class="group rounded-2xl border border-slate-200 bg-white shadow-sm p-5 hover:border-primary/50 hover:bg-slate-50 transition-colors">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 truncate">${c.title || "Khóa học"}</p>
+                    <p class="text-xs text-slate-500 mt-1 line-clamp-2">${c.shortDescription || ""}</p>
+                  </div>
+                  <span class="shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700">
+                    ${sessions} buổi
+                  </span>
+                </div>
+                <div class="mt-4 flex items-center justify-between gap-3">
+                  <span class="text-[11px] text-slate-400">Course ID: ${c.id || ""}</span>
+                  <span class="inline-flex items-center justify-center h-8 px-3 rounded-full bg-slate-900 text-white text-xs font-medium group-hover:bg-slate-800">
+                    Xem tài liệu
+                  </span>
+                </div>
+              </a>
+            `;
+          })
+          .join("");
+      }
+    }
+  </script>
+</body>
+</html>
+
