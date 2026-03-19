@@ -681,10 +681,21 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    import { getRoleFromEmail } from "./js/session.js";
+
     let isLoggedIn = false;
+    let dashboardHref = "dashboard.html";
+
+    function computeDashboardHref(user) {
+      if (!user) return "auth.html";
+      const role = getRoleFromEmail((user.email || "").toLowerCase());
+      if (role === "admin") return "admin-dashboard.html";
+      if (role === "mentor") return "mentor-dashboard.html";
+      return "dashboard.html";
+    }
 
     function gotoApp() {
-      window.location.href = isLoggedIn ? "dashboard.html" : "auth.html";
+      window.location.href = isLoggedIn ? dashboardHref : "auth.html";
     }
 
     function attachHandlers() {
@@ -711,6 +722,7 @@
       if (!container) return;
 
       if (!user) {
+        dashboardHref = "dashboard.html";
         container.innerHTML = `
           <button
             type="button"
@@ -731,6 +743,7 @@
         return;
       }
 
+      dashboardHref = computeDashboardHref(user);
       const displayName = user.displayName || "Học viên";
       const email = user.email || "";
       const initial = (displayName || email || "?").trim()[0]?.toUpperCase() || "S";
@@ -776,6 +789,7 @@
 
     onAuthStateChanged(auth, (user) => {
       isLoggedIn = !!user;
+      dashboardHref = computeDashboardHref(user || null);
       renderAuthNavbar(user || null);
     });
 

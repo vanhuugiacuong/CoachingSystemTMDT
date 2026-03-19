@@ -280,6 +280,7 @@
     import { renderStudentNavbar, renderSiteFooter } from "./js/layout.js";
     import { getCourseById, formatPriceVND } from "./js/courses-data.js";
     import { renderChatboxWidget } from "./js/chatbox-widget.js";
+    import { getRoleFromEmail } from "./js/session.js";
 
     renderStudentNavbar("dashboard");
     renderSiteFooter();
@@ -307,6 +308,19 @@
     const auth = getAuth(app);
     let currentUserEmail = "";
     let currentUserUid = "";
+
+    // Nếu đang đăng nhập bằng mentor/admin mà vào nhầm dashboard học viên -> redirect đúng role
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+      const role = getRoleFromEmail((user.email || "").toLowerCase());
+      if (role === "admin") {
+        window.location.href = "admin-dashboard.html";
+        return;
+      }
+      if (role === "mentor") {
+        window.location.href = "mentor-dashboard.html";
+      }
+    });
 
     function loadRegisteredCourses() {
       try {
