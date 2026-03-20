@@ -1,5 +1,13 @@
 import { formatPriceVND } from "./courses-data.js";
 
+function isoDaysAgo(daysAgo) {
+  // Create an ISO string that keeps the same local date to match `toDayKey()` logic.
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  d.setHours(12, 0, 0, 0);
+  return d.toISOString();
+}
+
 function safeJsonParse(raw, fallback) {
   try {
     const parsed = JSON.parse(raw);
@@ -78,6 +86,72 @@ function setHtml(id, html) {
 
 function money(n) {
   return formatPriceVND(Number.isFinite(n) ? n : 0);
+}
+
+function getMockInvoices() {
+  // Mock data only for admin-dashboard demo. No reading localStorage.
+  return [
+    {
+      id: "INV-MOCK-A",
+      userEmail: "student1@example.com",
+      userUid: "u1",
+      courseId: "llm-genai-beginner",
+      courseTitle: "LLM & Generative AI cho Beginner",
+      amount: 10000000,
+      method: "bank",
+      status: "paid",
+      createdAt: isoDaysAgo(2),
+    },
+    {
+      id: "INV-MOCK-B",
+      userEmail: "student2@example.com",
+      userUid: "u2",
+      courseId: "git-foundation",
+      courseTitle: "Git Foundation",
+      amount: 500000,
+      method: "cash",
+      status: "paid",
+      createdAt: isoDaysAgo(5),
+    },
+    {
+      id: "INV-MOCK-C",
+      userEmail: "student3@example.com",
+      userUid: "u3",
+      courseId: "nextjs-15-beginner",
+      courseTitle: "Next.js 15 cho Người mới bắt đầu",
+      amount: 450000,
+      method: "bank",
+      status: "paid",
+      createdAt: isoDaysAgo(3),
+    },
+  ];
+}
+
+function getMockRegistrations() {
+  // Each record shape aligns with dashboard/other pages.
+  return [
+    {
+      courseId: "llm-genai-beginner",
+      registrationType: "group",
+      status: "learning",
+      createdAt: isoDaysAgo(6),
+      price: 10000000,
+      schedule: [],
+    },
+    {
+      courseId: "git-foundation",
+      registrationType: "group",
+      status: "learning",
+      createdAt: isoDaysAgo(4),
+      price: 5000000,
+      schedule: [],
+    },
+  ];
+}
+
+function getMockMentorChats() {
+  // Keep empty by default (matches your screenshot "Tin nhắn mentor (7 ngày) = 0").
+  return [];
 }
 
 function buildTopCourses(invoices, limit = 5) {
@@ -266,9 +340,10 @@ function renderCharts({ days, revenueByDay, regsByDay, paymentSplit, chatsByDay 
 }
 
 export function initAdminDashboard({ days = 7 } = {}) {
-  const invoices = loadList("mkd-invoices").filter((x) => x && x.status === "paid");
-  const regs = loadList("mkd-registered-courses");
-  const chats = loadList("mkd-mentor-chats");
+  // Static mock data only (no localStorage reading).
+  const invoices = getMockInvoices();
+  const regs = getMockRegistrations();
+  const chats = getMockMentorChats();
 
   const daysKeys = lastNDaysKeys(days);
 
