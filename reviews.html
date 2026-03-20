@@ -25,13 +25,141 @@
     <header class="mb-6">
       <h1 class="text-2xl font-semibold text-slate-900 mb-1">Đánh giá</h1>
       <p class="text-sm text-slate-500">
-        Trang mô phỏng để hoàn thiện luồng menu. Tính năng đánh giá sẽ được bổ sung sau.
+        Chọn số sao và để lại nhận xét. Bạn có thể cập nhật đánh giá của mình bất cứ lúc nào.
       </p>
     </header>
 
-    <div class="rounded-2xl bg-white border border-slate-200 px-6 py-10 text-center text-sm text-slate-500">
-      Hiện chưa có đánh giá nào. Vui lòng quay lại sau.
-    </div>
+    <section class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-2xl bg-white border border-slate-200 px-6 py-5 md:col-span-2">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.14em] text-slate-400 font-medium">
+                Điểm trung bình
+              </p>
+              <div class="mt-2 flex items-center gap-3">
+                <div id="mkd-review-avg-stars" class="flex gap-1"></div>
+                <div class="text-3xl font-bold text-slate-900">
+                  <span id="mkd-review-avg-number">0.0</span>
+                </div>
+              </div>
+              <p class="text-sm text-slate-500 mt-1">
+                <span id="mkd-review-count">0</span> đánh giá
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs uppercase tracking-[0.14em] text-slate-400 font-medium">
+                Tóm tắt
+              </p>
+              <p class="text-sm text-slate-600 mt-2">
+                Hỗ trợ học viên cải thiện chất lượng coaching.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-white border border-slate-200 px-6 py-5">
+          <p class="text-xs uppercase tracking-[0.14em] text-slate-400 font-medium mb-2">
+            Quy tắc
+          </p>
+          <ul class="space-y-2 text-sm text-slate-600">
+            <li class="flex gap-2 items-start">
+              <span class="shrink-0 w-2 h-2 rounded-full bg-primary/60 mt-2"></span>
+              <span>Chỉ 1 đánh giá cho mỗi tài khoản.</span>
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="shrink-0 w-2 h-2 rounded-full bg-primary/60 mt-2"></span>
+              <span>Dữ liệu được lưu cục bộ bằng `localStorage`.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 px-6 py-5">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Đánh giá của bạn</h2>
+            <p class="text-sm text-slate-500 mt-1" id="mkd-review-your-hint">
+              Chọn số sao bên dưới và bấm “Gửi đánh giá”.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Bạn chọn:</span>
+            <span id="mkd-review-selected-label" class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-3 py-1 text-xs font-medium">
+              Chưa có
+            </span>
+          </div>
+        </div>
+
+        <form id="mkd-review-form" class="mt-4 space-y-4">
+          <div>
+            <p class="text-sm font-medium text-slate-700 mb-2">Chọn sao</p>
+            <div id="mkd-review-star-picker" class="flex gap-1">
+              <button type="button" class="mkd-review-star" data-value="1" aria-label="1 sao">★</button>
+              <button type="button" class="mkd-review-star" data-value="2" aria-label="2 sao">★</button>
+              <button type="button" class="mkd-review-star" data-value="3" aria-label="3 sao">★</button>
+              <button type="button" class="mkd-review-star" data-value="4" aria-label="4 sao">★</button>
+              <button type="button" class="mkd-review-star" data-value="5" aria-label="5 sao">★</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">Mẹo: bạn có thể bấm lại để cập nhật.</p>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium text-slate-700 mb-2">Nhận xét (tùy chọn)</p>
+            <textarea
+              id="mkd-review-text"
+              class="w-full min-h-[110px] rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              placeholder="Ví dụ: Mentor hỗ trợ rất sát sao, mình tiến bộ rõ rệt..."
+              maxlength="500"
+            ></textarea>
+            <p class="text-[11px] text-slate-400 mt-2">
+              <span id="mkd-review-text-count">0</span>/500 ký tự
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <button
+              type="submit"
+              id="mkd-review-submit"
+              class="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-primary text-white text-sm font-semibold hover:bg-primary-soft transition-colors"
+            >
+              Gửi đánh giá
+            </button>
+            <button
+              type="button"
+              id="mkd-review-clear"
+              class="inline-flex items-center justify-center h-11 px-6 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+            >
+              Xóa nội dung
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="rounded-2xl bg-white border border-slate-200 px-6 py-6">
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-base font-semibold text-slate-900">Danh sách đánh giá</h2>
+            <p class="text-sm text-slate-500 mt-1" id="mkd-review-list-hint">Hiện chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+          </div>
+          <div class="text-sm text-slate-500">
+            Sắp xếp: <span class="font-medium text-slate-700">Mới nhất</span>
+          </div>
+        </div>
+
+        <div id="mkd-review-list" class="space-y-4"></div>
+
+        <div id="mkd-review-list-footer" class="mt-5 flex items-center justify-center">
+          <button
+            type="button"
+            id="mkd-review-load-more"
+            class="hidden inline-flex items-center justify-center h-10 px-5 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
+          >
+            Xem thêm
+          </button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="mkd-footer"></div>
@@ -58,10 +186,293 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    const STORAGE_KEY = "mkd-reviews";
+    const PAGE_SIZE = 5;
+
+    let currentUser = null;
+    let currentUserRating = 0; // cached rating for UX
+    let renderPage = 1;
+
+    function loadReviews() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveReviews(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function getStarsHtml(value, { interactive = false } = {}) {
+      const v = Number(value) || 0;
+      return `
+        <div class="flex gap-0.5">
+          ${[1, 2, 3, 4, 5]
+            .map((n) => {
+              const filled = n <= v;
+              const cls = filled ? "text-amber-400" : "text-slate-300";
+              return `<span class="${cls}" aria-hidden="true">★</span>`;
+            })
+            .join("")}
+        </div>
+      `;
+    }
+
+    function computeAverage(reviews) {
+      if (!reviews.length) return { avg: 0, count: 0 };
+      const sum = reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+      return { avg: sum / reviews.length, count: reviews.length };
+    }
+
+    function formatCreatedAt(iso) {
+      if (!iso) return "";
+      const t = new Date(iso);
+      if (Number.isNaN(t.getTime())) return "";
+      return t.toLocaleDateString("vi-VN", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    function getUserKey(user) {
+      // Prefer uid; fallback to email for demo pages without full auth.
+      return user?.uid || (user?.email || "").toLowerCase() || "anonymous";
+    }
+
+    function upsertMyReview({ rating, text }) {
+      const reviews = loadReviews();
+      const uid = getUserKey(currentUser);
+      const nowIso = new Date().toISOString();
+      const existingIndex = reviews.findIndex((r) => r.userKey === uid);
+
+      const normalized = {
+        userKey: uid,
+        userEmail: (currentUser?.email || "").toLowerCase(),
+        rating,
+        text: (text || "").trim(),
+        createdAt: nowIso,
+      };
+
+      if (existingIndex >= 0) {
+        reviews[existingIndex] = { ...reviews[existingIndex], ...normalized };
+      } else {
+        reviews.unshift(normalized);
+      }
+
+      // Keep newest first.
+      reviews.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+      saveReviews(reviews);
+    }
+
+    function renderSummary() {
+      const reviews = loadReviews();
+      const { avg, count } = computeAverage(reviews);
+
+      const avgEl = document.getElementById("mkd-review-avg-number");
+      const countEl = document.getElementById("mkd-review-count");
+      const starsEl = document.getElementById("mkd-review-avg-stars");
+      if (avgEl) avgEl.textContent = avg ? avg.toFixed(1) : "0.0";
+      if (countEl) countEl.textContent = count.toString();
+      if (starsEl) {
+        // round to nearest for display
+        const display = avg ? Math.round(avg) : 0;
+        starsEl.innerHTML = getStarsHtml(display);
+      }
+    }
+
+    function renderYourForm() {
+      const reviews = loadReviews();
+      const uid = getUserKey(currentUser);
+      const mine = reviews.find((r) => r.userKey === uid);
+
+      const hintEl = document.getElementById("mkd-review-your-hint");
+      const submitBtn = document.getElementById("mkd-review-submit");
+      if (mine) {
+        currentUserRating = Number(mine.rating) || 0;
+        if (hintEl) hintEl.textContent = "Bạn có thể cập nhật đánh giá của mình.";
+        if (submitBtn) submitBtn.textContent = "Cập nhật đánh giá";
+      } else {
+        currentUserRating = 0;
+        if (hintEl) hintEl.textContent = "Chọn số sao bên dưới và bấm “Gửi đánh giá”.";
+        if (submitBtn) submitBtn.textContent = "Gửi đánh giá";
+      }
+
+      const textEl = document.getElementById("mkd-review-text");
+      if (textEl) textEl.value = mine?.text || "";
+
+      const rating = currentUserRating || 0;
+      const selectedLabel = document.getElementById("mkd-review-selected-label");
+      if (selectedLabel) {
+        selectedLabel.textContent = rating ? `${rating} sao` : "Chưa có";
+      }
+
+      // Update star picker highlight.
+      updateStarPicker(rating);
+
+      const countEl = document.getElementById("mkd-review-text-count");
+      if (countEl && textEl) countEl.textContent = textEl.value.length.toString();
+    }
+
+    function setSelectedRating(rating) {
+      currentUserRating = Number(rating) || 0;
+      const selectedLabel = document.getElementById("mkd-review-selected-label");
+      if (selectedLabel) selectedLabel.textContent = currentUserRating ? `${currentUserRating} sao` : "Chưa có";
+      updateStarPicker(currentUserRating);
+    }
+
+    function updateStarPicker(selected) {
+      const selectedVal = Number(selected) || 0;
+      const picker = document.getElementById("mkd-review-star-picker");
+      if (!picker) return;
+      const stars = picker.querySelectorAll(".mkd-review-star");
+      stars.forEach((btn) => {
+        const v = Number(btn.getAttribute("data-value")) || 0;
+        const filled = v <= selectedVal;
+        btn.classList.toggle("text-amber-400", filled);
+        btn.classList.toggle("text-slate-300", !filled);
+        btn.classList.toggle("hover:text-amber-400", true);
+        btn.classList.toggle("opacity-90", true);
+      });
+    }
+
+    function renderReviewsList() {
+      const listEl = document.getElementById("mkd-review-list");
+      const hintEl = document.getElementById("mkd-review-list-hint");
+      const loadMoreBtn = document.getElementById("mkd-review-load-more");
+      if (!listEl || !hintEl || !loadMoreBtn) return;
+
+      const reviews = loadReviews();
+      if (!reviews.length) {
+        hintEl.textContent = "Hiện chưa có đánh giá nào. Hãy là người đầu tiên!";
+        listEl.innerHTML = "";
+        loadMoreBtn.classList.add("hidden");
+        return;
+      }
+
+      hintEl.textContent = `Đang hiển thị ${Math.min(reviews.length, renderPage * PAGE_SIZE)}/${reviews.length} đánh giá`;
+      const slice = reviews.slice(0, renderPage * PAGE_SIZE);
+
+      listEl.innerHTML = slice
+        .map((r) => {
+          const initials = ((r.userEmail || "").trim() || "U").split("@")[0]?.trim()?.[0] || "U";
+          const rating = Number(r.rating) || 0;
+          const isMine = currentUser ? r.userKey === getUserKey(currentUser) : false;
+          const stars = getStarsHtml(rating);
+          const text = r.text ? r.text : "";
+          return `
+            <div class="rounded-2xl border border-slate-200 bg-slate-50/60 px-5 py-4">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex items-start gap-3 min-w-0">
+                  <div class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-semibold shrink-0">
+                    ${initials.toUpperCase()}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <p class="font-medium text-slate-900 truncate">${isMine ? "Bạn" : (r.userEmail || "Khách").split("@")[0]}</p>
+                      ${isMine ? `<span class="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold">Của bạn</span>` : ""}
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">${formatCreatedAt(r.createdAt)}</p>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                  <div>${stars}</div>
+                  <p class="text-xs text-slate-500">${rating}/5</p>
+                </div>
+              </div>
+              ${text ? `<p class="text-sm text-slate-700 mt-3 leading-relaxed break-words">${text}</p>` : ""}
+            </div>
+          `;
+        })
+        .join("");
+
+      loadMoreBtn.classList.toggle("hidden", renderPage * PAGE_SIZE >= reviews.length);
+    }
+
+    function bindEvents() {
+      const form = document.getElementById("mkd-review-form");
+      const clearBtn = document.getElementById("mkd-review-clear");
+      const textarea = document.getElementById("mkd-review-text");
+      const picker = document.getElementById("mkd-review-star-picker");
+
+      if (picker) {
+        const init = () => updateStarPicker(currentUserRating || 0);
+        picker.querySelectorAll(".mkd-review-star").forEach((btn) => {
+          // base classes
+          btn.classList.add("text-slate-300");
+          btn.classList.add("text-2xl");
+          btn.classList.add("leading-none");
+          btn.classList.add("transition-colors");
+          btn.classList.add("hover:text-amber-400");
+          btn.classList.add("focus-visible:outline-none");
+          btn.classList.add("focus-visible:ring-2");
+          btn.classList.add("focus-visible:ring-primary/30");
+          btn.classList.add("px-0.5");
+
+          btn.addEventListener("click", () => {
+            const v = Number(btn.getAttribute("data-value")) || 0;
+            setSelectedRating(v);
+          });
+        });
+        init();
+      }
+
+      if (textarea) {
+        const countEl = document.getElementById("mkd-review-text-count");
+        textarea.addEventListener("input", () => {
+          if (!countEl) return;
+          countEl.textContent = textarea.value.length.toString();
+        });
+      }
+
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const rating = currentUserRating || 0;
+          const text = textarea?.value || "";
+          if (rating < 1 || rating > 5) {
+            alert("Vui lòng chọn ít nhất 1 sao để gửi đánh giá.");
+            return;
+          }
+          upsertMyReview({ rating, text });
+          renderPage = 1;
+          renderSummary();
+          renderYourForm();
+          renderReviewsList();
+        });
+      }
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", () => {
+          if (textarea) textarea.value = "";
+          setSelectedRating(0);
+          const countEl = document.getElementById("mkd-review-text-count");
+          if (countEl && textarea) countEl.textContent = textarea.value.length.toString();
+        });
+      }
+
+      const loadMoreBtn = document.getElementById("mkd-review-load-more");
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener("click", () => {
+          renderPage += 1;
+          renderReviewsList();
+        });
+      }
+    }
+
     onAuthStateChanged(auth, (user) => {
       if (!user) {
         window.location.href = "auth.html";
+        return;
       }
+      currentUser = user;
+
+      // Initial render once user is available.
+      renderSummary();
+      renderYourForm();
+      bindEvents();
+      renderReviewsList();
     });
   </script>
 </body>

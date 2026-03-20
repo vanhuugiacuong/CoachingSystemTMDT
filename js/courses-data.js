@@ -5,7 +5,7 @@ export const courses = [
     sessions: 7,
     shortDescription:
       "Chuẩn bị kỹ năng và hồ sơ ứng tuyển với mức lương từ 2,000 USD / tháng. Học phí niêm yết là chi phí cơ bản.",
-    price: 2000000,
+    price: 5000000,
     icon: "2K",
     iconSlug: "lucide:trending-up",
     categoryBadge: { label: "Học viên", tone: "emerald" },
@@ -69,7 +69,7 @@ export const courses = [
     sessions: 2,
     shortDescription:
       "Git Foundation là khóa học nền tảng giúp người học làm quen và nắm vững các khái niệm cơ bản nhất về Git.",
-    price: 500000,
+    price: 5000000,
     icon: "Git",
     iconSlug: "git",
     categoryBadge: { label: "Học viên", tone: "emerald" },
